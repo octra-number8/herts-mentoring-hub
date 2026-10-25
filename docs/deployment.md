@@ -17,10 +17,10 @@ Production runs on **Vercel** (Next.js) and **Supabase** (Postgres, Auth, Storag
 |---|---|
 | URL | https://app.hertsmentors.com (Vercel project `herts-mentoring-hub`, team FIRE) |
 | Database | Supabase project `herts-mentoring-hub-staging` (`pgthnipdqbuoqptxkovs`, London) |
-| Data | Synthetic only, seeded with `ALLOW_REMOTE_SEED=yes-synthetic-only` |
+| Data | No people except the administrator (synthetic people and placeholder courses removed 25 Oct 2026). Lodges, Areas and meeting centres are still the synthetic set until the real list is imported |
 | Email | `EMAIL_DRIVER=memory`: nothing is sent until a Resend domain is verified |
 | Background jobs | Vercel Cron, every 10 minutes |
-| Test accounts | `.staging-secrets.json` in the repo folder (git-ignored): emails, password, TOTP secrets |
+| Test accounts | None. Do not re-seed staging now it holds a real administrator; test locally or in CI instead |
 
 Deploy a new version: `npx vercel deploy --prod` after CI passes. Apply new migrations first: `npx supabase db push --linked`. Auth settings for staging live in `supabase/config.toml` under `[remotes.staging]` and are applied with `npx supabase config push --project-ref pgthnipdqbuoqptxkovs`.
 
