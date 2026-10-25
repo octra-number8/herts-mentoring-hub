@@ -17,7 +17,7 @@ Production runs on **Vercel** (Next.js) and **Supabase** (Postgres, Auth, Storag
 |---|---|
 | URL | https://app.hertsmentors.com (Vercel project `herts-mentoring-hub`, team FIRE) |
 | Database | Supabase project `herts-mentoring-hub-staging` (`pgthnipdqbuoqptxkovs`, London) |
-| Data | No people except the administrator (synthetic people and placeholder courses removed 25 Oct 2026). Lodges, Areas and meeting centres are still the synthetic set until the real list is imported |
+| Data | Clean: only the administrator account and the three E-series courses. All synthetic people, lodges, Areas, meeting centres, documents, knowledge articles and placeholder courses were removed on 25 Oct 2026. Configuration (roles, permissions, categories, templates, workflows) is kept |
 | Email | `EMAIL_DRIVER=memory`: nothing is sent until a Resend domain is verified |
 | Background jobs | Vercel Cron, every 10 minutes |
 | Test accounts | None. Do not re-seed staging now it holds a real administrator; test locally or in CI instead |
