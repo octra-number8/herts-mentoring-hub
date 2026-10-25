@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 3100",
     "lint": "eslint",
-    "db:reset": "supabase db reset && npm run db:seed",
+    "db:reset": "supabase db reset && sleep 5 && npm run db:seed",
     "db:seed": "tsx scripts/seed.ts",
     "db:types": "supabase gen types typescript --local > src/types/database.ts",
     "typecheck": "tsc --noEmit",

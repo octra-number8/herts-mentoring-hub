@@ -139,7 +139,7 @@ describe("Scenario 8: training event capacity, waiting list and attendance", () 
 describe("Scenario 12: Assistant reassignment", () => {
   it("transfers Lodges and open work while preserving history", async () => {
     const pgm = await as("pgm");
-    const target = lodge(9003).id;
+    const target = lodge(9007).id;
     const before = await count(service(), "tasks", (q) => q.eq("lodge_id", target).eq("owner_account_id", user("apgmen1").accountId));
     await service().from("tasks").insert({ org_id: secrets.orgId, title: "Open work to transfer", owner_account_id: user("apgmen1").accountId, lodge_id: target, created_by: user("pgm").accountId });
     const { error } = await pgm.rpc("allocate_lodge", { p_lodge: target, p_person: user("apgmen2").personId, p_reason: "Rebalancing workloads" });
@@ -186,11 +186,12 @@ describe("Scenario 2: Lodge Mentor change", () => {
   it("preserves history, notifies the Assistant and keeps the portal disabled", async () => {
     const apg = await as("apgmen1");
     const svc = service();
-    const { data: newLm } = await svc.from("lodge_memberships").select("person_id").eq("lodge_id", lodge(9001).id).neq("person_id", user("lm1").personId).is("left_on", null).limit(1).single();
-    const { error } = await apg.rpc("record_lodge_appointment", { p_lodge: lodge(9001).id, p_office: "lodge_mentor", p_person: newLm!.person_id });
+    const { data: before } = await svc.from("lodge_appointments").select("person_id").eq("lodge_id", lodge(9006).id).eq("office", "lodge_mentor").is("ends_on", null).single();
+    const { data: newLm } = await svc.from("lodge_memberships").select("person_id").eq("lodge_id", lodge(9006).id).neq("person_id", before!.person_id ?? "").is("left_on", null).limit(1).single();
+    const { error } = await apg.rpc("record_lodge_appointment", { p_lodge: lodge(9006).id, p_office: "lodge_mentor", p_person: newLm!.person_id });
     expect(error).toBeNull();
-    const { data: hist } = await svc.from("lodge_appointments").select("person_id, ends_on").eq("lodge_id", lodge(9001).id).eq("office", "lodge_mentor").order("starts_on");
-    expect(hist!.at(-2)!.person_id).toBe(user("lm1").personId);
+    const { data: hist } = await svc.from("lodge_appointments").select("person_id, ends_on").eq("lodge_id", lodge(9006).id).eq("office", "lodge_mentor").order("starts_on");
+    expect(hist!.at(-2)!.person_id).toBe(before!.person_id);
     expect(hist!.at(-2)!.ends_on).not.toBeNull();
     expect(hist!.at(-1)!.person_id).toBe(newLm!.person_id);
     expect(await count(svc, "domain_events", (q) => q.eq("type", "lodge.mentor_changed"))).toBe(1);
@@ -244,12 +245,14 @@ describe("Scenario 10: quarterly report", () => {
     // Approve, then a reassignment today must not change the stored figures.
     await pgm.rpc("report_quarterly_transition", { p_report: id, p_to: "review" });
     expect((await pgm.rpc("report_quarterly_transition", { p_report: id, p_to: "approved" })).error).toBeNull();
-    await pgm.rpc("allocate_lodge", { p_lodge: lodge(9040).id, p_person: user("apgmen1").personId });
+    const { data: allocation } = await pgm.rpc("allocate_lodge", { p_lodge: lodge(9039).id, p_person: user("apgmen1").personId });
     const { data: q2 } = await pgm.from("quarterly_reports").select("report_snapshots(data)").eq("id", id).single();
     expect((q2 as any).report_snapshots.data).toEqual(before);
     expect((await pgm.rpc("report_generate_quarterly", { p_year: 2026, p_quarter: 3 })).error).not.toBeNull();
     // Recomputing the historic period from effective dates gives the same allocation count.
     const { data: recomputed } = await service().rpc("admin_report_period_data", { p_org: secrets.orgId, p_start: "2026-07-01", p_end: "2026-09-30" });
     if (recomputed) expect(recomputed.lodges.allocated).toBe(before.lodges.allocated);
+    // Leave 9039 unallocated for later suites.
+    expect((await pgm.rpc("end_allocation", { p_allocation: allocation })).error).toBeNull();
   });
 });

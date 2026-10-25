@@ -26,6 +26,7 @@ export const ACADEMY_NAV: NavItem[] = [
   { href: "/academy/courses", label: "Courses", any: ["academy.learn"] },
   { href: "/academy/progress", label: "My Progress", any: ["academy.learn"] },
   { href: "/academy/certificates", label: "My Certificates", any: ["academy.learn"] },
+  { href: "/academy/plan", label: "My Plan", any: ["academy.learn"] },
   { href: "/academy/events", label: "Training Events", any: ["academy.learn"] },
   { href: "/academy/resources", label: "Resources", any: ["academy.learn", "docs.read.mentors"] },
   { href: "/academy/author", label: "Authoring", any: ["academy.author"] },

@@ -5,6 +5,7 @@ import { enqueueEmail, enqueueTemplate, processOutbox } from "../email/outbox";
 import { ensureCertificateFile } from "../pdf/certificate";
 import { supabaseService, type DB } from "../supabase";
 import { dispatchToWorkflows, processWorkflowRuns } from "../workflows/engine";
+import { processScheduledReports } from "./scheduled-reports";
 
 type DomainEvent = { id: string; org_id: string; type: string; entity_type: string | null; entity_id: string | null; payload: Record<string, unknown>; attempts: number };
 
@@ -79,7 +80,7 @@ async function handleBuiltIn(db: DB, ev: DomainEvent) {
       const { data: d } = await db.from("documents").select("title, classification").eq("id", ev.entity_id!).single();
       const perm = d?.classification === "learning" ? "academy.learn" : d?.classification === "mentors" ? "docs.read.mentors" : "docs.read.internal";
       for (const acc of await accountsHolding(db, ev.org_id, perm)) {
-        await db.rpc("admin_notify", { p_account: acc, p_type: "document_ack", p_title: "Please read and acknowledge", p_body: d?.title ?? "", p_link: `/library/${ev.entity_id}`, p_dedupe: `ack:${p.version_id}:${acc}` });
+        await db.rpc("admin_notify", { p_account: acc, p_type: "document_ack", p_title: "Please read and acknowledge", p_body: d?.title ?? "", p_link: d?.classification === "learning" || d?.classification === "mentors" ? `/academy/resources#doc-${ev.entity_id}` : `/library/${ev.entity_id}`, p_dedupe: `ack:${p.version_id}:${acc}` });
       }
       return;
     }
@@ -246,6 +247,7 @@ export async function runAllJobs() {
   const campaigns = await processCampaigns(db);
   const reminders = await processReminders(db);
   const notifications = await processNotificationEmails(db);
+  const scheduledReports = await processScheduledReports(db);
   const outbox = await processOutbox(db, 100);
-  return { events, workflows, campaigns, reminders, notifications, outbox, ms: Date.now() - started };
+  return { events, workflows, campaigns, reminders, notifications, scheduledReports, outbox, ms: Date.now() - started };
 }

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   if (!s || !s.permissions.has("hub.access_management")) return NextResponse.json([], { status: 401 });
   const role = request.nextUrl.searchParams.get("role");
   const db = await supabaseServer();
-  const { data } = await db.from("user_accounts").select("id, person_id, persons(display_name), role_assignments(starts_on, ends_on, roles(key, name, is_management))").eq("status", "active");
+  const { data } = await db.from("user_accounts").select("id, person_id, persons(display_name), role_assignments!role_assignments_account_id_fkey(starts_on, ends_on, roles(key, name, is_management))").eq("status", "active");
   const today = new Date().toISOString().slice(0, 10);
   const rows = (data ?? []).map((a) => {
     const roles = ((a.role_assignments ?? []) as unknown as { starts_on: string; ends_on: string | null; roles: { key: string; name: string; is_management: boolean } }[])

@@ -34,8 +34,14 @@ export async function cookieFor(key: string): Promise<string> {
     const { data } = await supabase.auth.mfa.listFactors();
     const f = data!.totp[0];
     const { data: ch } = await supabase.auth.mfa.challenge({ factorId: f.id });
-    const { error: e } = await supabase.auth.mfa.verify({ factorId: f.id, challengeId: ch!.id, code: generateSync({ secret: user.totpSecret }) });
-    if (e) throw e;
+    let { error: e } = await supabase.auth.mfa.verify({ factorId: f.id, challengeId: ch!.id, code: generateSync({ secret: user.totpSecret }) });
+    if (e) {
+      // Codes are single-use: wait for the next window and retry once.
+      await new Promise((r) => setTimeout(r, 30_500 - (Date.now() % 30_000)));
+      const { data: ch2 } = await supabase.auth.mfa.challenge({ factorId: f.id });
+      ({ error: e } = await supabase.auth.mfa.verify({ factorId: f.id, challengeId: ch2!.id, code: generateSync({ secret: user.totpSecret }) }));
+      if (e) throw e;
+    }
   }
   return [...jar].map(([n, v]) => `${n}=${v}`).join("; ");
 }

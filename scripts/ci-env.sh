@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Writes .env.local from the running local Supabase stack (CI and fresh clones).
 set -euo pipefail
-eval "$(npx supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY|DB_URL)=')"
+eval "$(npx supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY|DB_URL|JWT_SECRET)=')"
 cat > .env.local <<ENV
 NEXT_PUBLIC_SUPABASE_URL=${API_URL}
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}
 SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
+SUPABASE_JWT_SECRET=${JWT_SECRET}
 DATABASE_URL=${DB_URL}
 APP_URL=http://localhost:3100
 EMAIL_DRIVER=smtp

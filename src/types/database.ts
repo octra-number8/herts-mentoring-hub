@@ -709,7 +709,7 @@ export type Database = {
           outcome?: string | null
           owner_account_id?: string | null
           priority?: string
-          reference: string
+          reference?: string
           referred_to?: string | null
           requester_account_id?: string | null
           requester_person_id?: string | null
@@ -1001,6 +1001,71 @@ export type Database = {
             foreignKeyName: "comm_preferences_person_id_fkey"
             columns: ["person_id"]
             isOneToOne: true
+            referencedRelation: "v_member_overview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_change_requests: {
+        Row: {
+          created_at: string
+          details: string
+          handled_at: string | null
+          handled_by: string | null
+          handled_note: string | null
+          id: string
+          org_id: string
+          person_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details: string
+          handled_at?: string | null
+          handled_by?: string | null
+          handled_note?: string | null
+          id?: string
+          org_id: string
+          person_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          handled_note?: string | null
+          id?: string
+          org_id?: string
+          person_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_change_requests_handled_by_fkey"
+            columns: ["handled_by"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_change_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_change_requests_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_change_requests_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
             referencedRelation: "v_member_overview"
             referencedColumns: ["id"]
           },
@@ -2114,6 +2179,39 @@ export type Database = {
           },
         ]
       }
+      event_checkin_secrets: {
+        Row: {
+          event_id: string
+          rotated_at: string
+          secret: string
+        }
+        Insert: {
+          event_id: string
+          rotated_at?: string
+          secret?: string
+        }
+        Update: {
+          event_id?: string
+          rotated_at?: string
+          secret?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_checkin_secrets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_checkin_secrets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "v_event_attendance"
+            referencedColumns: ["event_id"]
+          },
+        ]
+      }
       event_invites: {
         Row: {
           event_id: string
@@ -2296,7 +2394,6 @@ export type Database = {
           capacity: number | null
           certificate_on_attendance: boolean
           checkin_open: boolean
-          checkin_secret: string
           course_id: string | null
           created_at: string
           created_by: string | null
@@ -2330,7 +2427,6 @@ export type Database = {
           capacity?: number | null
           certificate_on_attendance?: boolean
           checkin_open?: boolean
-          checkin_secret?: string
           course_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -2364,7 +2460,6 @@ export type Database = {
           capacity?: number | null
           certificate_on_attendance?: boolean
           checkin_open?: boolean
-          checkin_secret?: string
           course_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -4027,6 +4122,7 @@ export type Database = {
       meeting_agenda_items: {
         Row: {
           document_id: string | null
+          document_url: string | null
           id: string
           meeting_id: string
           notes: string | null
@@ -4036,6 +4132,7 @@ export type Database = {
         }
         Insert: {
           document_id?: string | null
+          document_url?: string | null
           id?: string
           meeting_id: string
           notes?: string | null
@@ -4045,6 +4142,7 @@ export type Database = {
         }
         Update: {
           document_id?: string | null
+          document_url?: string | null
           id?: string
           meeting_id?: string
           notes?: string | null
@@ -6460,6 +6558,43 @@ export type Database = {
         }
         Returns: string
       }
+      academy_learner_context: { Args: { p_person: string }; Returns: Json }
+      academy_learning_filters: { Args: never; Returns: Json }
+      academy_learning_records: {
+        Args: {
+          p_area?: string
+          p_course?: string
+          p_from?: string
+          p_limit?: number
+          p_lodge?: string
+          p_person?: string
+          p_q?: string
+          p_role?: string
+          p_status?: string
+          p_to?: string
+        }
+        Returns: {
+          area_id: string
+          area_name: string
+          completed_at: string
+          course_id: string
+          course_title: string
+          display_name: string
+          due_on: string
+          enrolled_at: string
+          enrolment_id: string
+          lessons_completed: number
+          lessons_required: number
+          lodge_id: string
+          lodge_name: string
+          lodge_number: number
+          person_id: string
+          roles: string[]
+          source: string
+          status: string
+          version_no: number
+        }[]
+      }
       academy_new_version: { Args: { p_course: string }; Returns: string }
       academy_submit_assessment: {
         Args: { p_answers: Json; p_enrolment: string; p_lesson: string }
@@ -6470,11 +6605,28 @@ export type Database = {
         Returns: undefined
       }
       academy_withdraw: { Args: { p_enrolment: string }; Returns: undefined }
+      account_request_contact_change: {
+        Args: { p_details: string }
+        Returns: string
+      }
       account_set_status: {
         Args: { p_account: string; p_reason: string; p_status: string }
         Returns: undefined
       }
       admin_bootstrap_org: { Args: { p_org: string }; Returns: undefined }
+      admin_create_invitation: {
+        Args: {
+          p_email: string
+          p_first: string
+          p_last: string
+          p_message?: string
+          p_person: string
+          p_roles: string[]
+          p_title: string
+          p_token_hash: string
+        }
+        Returns: Json
+      }
       admin_generate_quarterly: {
         Args: { p_org: string; p_quarter: number; p_year: number }
         Returns: string
@@ -6504,6 +6656,14 @@ export type Database = {
       admin_report_period_data: {
         Args: { p_end: string; p_org: string; p_start: string }
         Returns: Json
+      }
+      admin_resend_invitation: {
+        Args: { p_invitation: string; p_token_hash: string }
+        Returns: Json
+      }
+      admin_revoke_invitation: {
+        Args: { p_invitation: string }
+        Returns: undefined
       }
       allocate_lodge: {
         Args: {
@@ -6618,8 +6778,30 @@ export type Database = {
         }
         Returns: string
       }
+      import_cancel: { Args: { p_batch: string }; Returns: undefined }
       import_commit: { Args: { p_batch: string }; Returns: Json }
+      import_stage: {
+        Args: {
+          p_batch: string
+          p_rows: Json
+          p_scope?: string[]
+          p_stats: Json
+          p_template?: string
+        }
+        Returns: number
+      }
+      integration_failure_resolve: {
+        Args: { p_failure: string; p_retry: boolean }
+        Returns: string
+      }
       knowledge_publish: { Args: { p_article: string }; Returns: undefined }
+      learning_person_roles: {
+        Args: never
+        Returns: {
+          person_id: string
+          role_name: string
+        }[]
+      }
       log_export: {
         Args: {
           p_dataset: string
@@ -6634,6 +6816,21 @@ export type Database = {
         Returns: undefined
       }
       my_context: { Args: never; Returns: Json }
+      my_portal_scope: { Args: never; Returns: Json }
+      outbox_retry: { Args: { p_id: string }; Returns: undefined }
+      person_clear_correction: {
+        Args: { p_field: string; p_person: string }
+        Returns: undefined
+      }
+      person_record_correction: {
+        Args: {
+          p_field: string
+          p_person: string
+          p_reason: string
+          p_value: string
+        }
+        Returns: undefined
+      }
       record_lodge_appointment: {
         Args: {
           p_confirmed?: boolean
@@ -6681,6 +6878,11 @@ export type Database = {
         Args: { p_scope?: string; p_token: string }
         Returns: boolean
       }
+      workflow_run_decide: {
+        Args: { p_approve: boolean; p_run: string }
+        Returns: undefined
+      }
+      workflow_run_retry: { Args: { p_run: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

@@ -45,3 +45,4 @@ next-env.d.ts
 /playwright-report/
 /.seed-secrets.json
 supabase/.temp
+/backups/

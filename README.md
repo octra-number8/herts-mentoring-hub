@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hertfordshire Provincial Mentoring Hub
 
-## Getting Started
+The operating system for Provincial mentoring in Hertfordshire, with the Herts Mentoring Academy for Lodge Mentors, Personal Mentors and newer Brethren.
 
-First, run the development server:
+*Prepare · Guide · Support · Enlighten*
+
+> This repository contains **synthetic test data only**. No live membership information is held until the Province confirms data authority (see `docs/production-readiness.md`).
+
+## First release
+
+- **Provincial management** for the Provincial Grand Mentor, Deputy, Assistant Provincial Grand Mentors and authorised team members, with MFA.
+- **Herts Mentoring Academy** for invited learners, who see only their own learning.
+- **Lodge Mentor portal**: built, secured and tested, but closed until leadership activates it for a user, Lodge or role.
+
+## Quick start (local)
+
+Requirements: Node 24, Docker.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+npx supabase start          # local Postgres, Auth, Storage, Mailpit on ports 554xx
+./scripts/ci-env.sh         # writes .env.local from the running stack
+npm run db:reset            # apply migrations and load synthetic data
+npm run dev                 # http://localhost:3100
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Test accounts are written to `.seed-secrets.json` (all share one password). Management accounts need a TOTP code: `node scripts/totp.mjs pgm`. Captured email: http://127.0.0.1:55424.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint && npm run typecheck
+npm test                    # database, RLS, permission and workflow tests (resets the local DB)
+npm run test:e2e            # Playwright end-to-end and accessibility tests
+npx tsx scripts/smoke.ts pgm /dashboard /lodges     # quick page checks as a user
+```
 
-## Learn More
+## Documentation
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Topic | File |
+|---|---|
+| Architecture and domains | `docs/architecture.md` |
+| Decisions | `docs/adr/` |
+| Database schema and ERD (generated) | `docs/database-schema.md` |
+| Permissions matrix (generated) | `docs/permissions-matrix.md` |
+| Feature activation matrix (generated) | `docs/feature-activation.md` |
+| Development conventions | `docs/conventions.md` |
+| Deployment and environment settings | `docs/deployment.md` |
+| Backup, recovery and runbooks | `docs/runbooks.md` |
+| Testing and acceptance results | `docs/testing.md` |
+| Administrator guide | `docs/guides/administrator.md` |
+| User guides | `docs/guides/` |
+| Production readiness | `docs/production-readiness.md` |

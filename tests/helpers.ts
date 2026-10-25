@@ -29,9 +29,14 @@ export async function as(key: string, opts: { mfa?: boolean } = {}): Promise<Sup
     const f = data!.totp[0];
     const { data: ch, error: e1 } = await c.auth.mfa.challenge({ factorId: f.id });
     if (e1) throw e1;
-    // Avoid reusing a code within the same 30s window across rapid sign-ins.
-    const { error: e2 } = await c.auth.mfa.verify({ factorId: f.id, challengeId: ch!.id, code: generateSync({ secret: u.totpSecret }) });
-    if (e2) throw e2;
+    let { error: e2 } = await c.auth.mfa.verify({ factorId: f.id, challengeId: ch!.id, code: generateSync({ secret: u.totpSecret }) });
+    if (e2) {
+      // A TOTP code cannot be used twice: wait for the next 30-second window and retry once.
+      await new Promise((r) => setTimeout(r, 30_500 - (Date.now() % 30_000)));
+      const { data: ch2 } = await c.auth.mfa.challenge({ factorId: f.id });
+      ({ error: e2 } = await c.auth.mfa.verify({ factorId: f.id, challengeId: ch2!.id, code: generateSync({ secret: u.totpSecret }) }));
+      if (e2) throw e2;
+    }
   }
   return c;
 }
