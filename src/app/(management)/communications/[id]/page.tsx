@@ -5,6 +5,7 @@ import { Alert, DescriptionList, EmptyState, PageHeader, Panel, Stat, Tabs } fro
 import { TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { formatDateTime, label } from "@/lib/utils";
 import { describeAudience, parseAudience, personalise } from "@/server/comms/audience";
+import { DoneNotice } from "@/components/events/notice";
 import { renderEmail } from "@/server/email/layout";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
@@ -22,7 +23,7 @@ const STAGES = ["candidate", "entered_apprentice", "fellow_craft", "master_mason
 type Tab = "message" | "audience" | "preview" | "review" | "delivery";
 type Recipient = { person_id: string; email: string; name: string; excluded_reason: string | null };
 
-export default async function CampaignPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
+export default async function CampaignPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; done?: string }> }) {
   const session = await requirePermission("comms.use");
   const { id } = await params;
   const sp = await searchParams;
@@ -65,6 +66,13 @@ export default async function CampaignPage({ params, searchParams }: { params: P
           {(mine || can(session, "comms.approve")) && ["draft", "pending_approval", "approved", "scheduled"].includes(c.status) && <CancelCampaignButton campaignId={id} />}
         </>}
       />
+      <DoneNotice done={sp.done} messages={{
+        submitted: "Submitted for approval. The Provincial Grand Mentor and Deputy have been notified.",
+        queued: "Approved and queued. Sending starts within a few minutes, or at the scheduled time.",
+        approved: "Approved. Sending starts within a few minutes, or at the scheduled time.",
+        returned: "Returned to the sender with your note.",
+        cancelled: "Campaign cancelled. Nothing further will be sent.",
+      }} />
       {c.status === "draft" && c.approval_note && <div className="mb-4"><Alert tone="warning" title="Returned for changes">{c.approval_note}</Alert></div>}
       {!editable && c.status === "draft" && <div className="mb-4"><Alert tone="info">This draft belongs to {sender}. Only they can change it.</Alert></div>}
       <Tabs current={tab} tabs={tabs.map((t) => ({

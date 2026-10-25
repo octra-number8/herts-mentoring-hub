@@ -8,6 +8,7 @@ import { TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { CHECKIN_METHOD_LABELS, eventStatusLabel, formatLabel, kindLabel, registrationLabel, trainerRoleLabel, visibilityLabel } from "@/components/events/constants";
 import { renderMarkdown } from "@/lib/markdown";
 import { formatDateTime, formatTime, plural } from "@/lib/utils";
+import { DoneNotice } from "@/components/events/notice";
 import { safeBookingUrl } from "@/server/integrations/octra";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
@@ -27,7 +28,7 @@ type Reg = {
   persons: { display_name: string; email: string | null } | null;
 };
 
-export default async function EventPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
+export default async function EventPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; done?: string }> }) {
   const session = await requirePermission("events.read.internal", "events.manage");
   const { id } = await params;
   const sp = await searchParams;
@@ -82,6 +83,20 @@ export default async function EventPage({ params, searchParams }: { params: Prom
           </>
         }
       />
+      <DoneNotice done={sp.done} messages={{
+        published: "Published. The event is now visible to its audience.",
+        draft: "Returned to draft. Only organisers can see it.",
+        cancelled: "Event cancelled. Everyone who was booked will be told by email.",
+        completed: "Event completed. Anyone still confirmed but not checked in is now recorded as not attending; correct any mistakes below.",
+        registered: "Registered. A confirmation email is on its way.",
+        waitlisted: "The event is full, so they have been added to the waiting list and told by email.",
+        already: "They were already registered.",
+        reg_cancelled: "Place cancelled. Anyone on the waiting list who can now have a place has been offered it.",
+        attendance: "Attendance updated. The change and your reason are recorded in the audit log.",
+        checkin_open: "Check-in is open.",
+        checkin_closed: "Check-in is closed.",
+        checkin_rotated: "Check-in is open with a new session code. The old code no longer works.",
+      }} />
       {event.status === "cancelled" && <div className="mb-4"><Alert tone="warning" title="This event was cancelled">{event.cancelled_reason}</Alert></div>}
       {event.status === "draft" && <div className="mb-4"><Alert tone="info">Draft: only organisers can see this event. Publish it when it is ready.</Alert></div>}
       <Tabs current={tab} tabs={tabs.map((t) => ({

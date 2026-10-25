@@ -8,6 +8,7 @@ import { Alert, DescriptionList, PageHeader, Panel } from "@/components/ui/layou
 import { formatLabel, kindLabel, registrationLabel, trainerRoleLabel } from "@/components/events/constants";
 import { renderMarkdown } from "@/lib/markdown";
 import { formatDateTime, formatTime } from "@/lib/utils";
+import { DoneNotice } from "@/components/events/notice";
 import { safeBookingUrl } from "@/server/integrations/octra";
 import { requireSession } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
@@ -15,9 +16,10 @@ import { CancelPlaceButton, FeedbackForm, RegisterButton } from "../event-forms"
 
 export const metadata: Metadata = { title: "Event" };
 
-export default async function AcademyEventPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AcademyEventPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ done?: string }> }) {
   const session = await requireSession();
   const { id } = await params;
+  const { done } = await searchParams;
   const db = await supabaseServer();
   const { data: e } = await db.from("events")
     .select("id, title, description, kind, format, starts_at, ends_at, status, location, registration_mode, registration_opens_at, registration_closes_at, external_booking_url, feedback_enabled, cancelled_reason, certificate_on_attendance, attendance_completes_course, meeting_centres(name)")
@@ -63,6 +65,12 @@ export default async function AcademyEventPage({ params }: { params: Promise<{ i
         actions={e.status !== "cancelled" ? <LinkButton href={`/api/events/${id}/ics`} prefetch={false}>Add to my calendar</LinkButton> : undefined}
       />
 
+      <DoneNotice done={done} messages={{
+        booked: "You're booked. A confirmation email is on its way.",
+        waitlisted: "The event is full, so you are on the waiting list. If a place becomes free it is offered to you automatically and we will email you.",
+        already: "You are already booked.",
+        cancelled: "Your place has been cancelled. Thank you for letting us know.",
+      }} />
       {e.status === "cancelled" && <div className="mb-6"><Alert tone="warning" title="This event has been cancelled">{e.cancelled_reason ?? "We are sorry for any inconvenience."}</Alert></div>}
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -103,7 +111,7 @@ export default async function AcademyEventPage({ params }: { params: Promise<{ i
 
           {reg?.status === "attended" && e.feedback_enabled && (
             <Panel id="feedback" title="Your feedback" description="It helps us improve future sessions. Only the organisers see it.">
-              {reg.feedback_at ? <p className="text-sm">Thank you. You rated this session {reg.feedback_rating} out of 5 on {formatDateTime(reg.feedback_at)}.</p>
+              {reg.feedback_at ? <p className="text-sm">Thank you for your feedback. You rated this session {reg.feedback_rating} out of 5 on {formatDateTime(reg.feedback_at)}.</p>
                 : <FeedbackForm eventId={id} registrationId={reg.id} />}
             </Panel>
           )}

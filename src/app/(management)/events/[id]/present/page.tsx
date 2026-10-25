@@ -8,13 +8,15 @@ import { formatDateTime, formatTime } from "@/lib/utils";
 import { serverEnv } from "@/lib/env";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
+import { DoneNotice } from "@/components/events/notice";
 import { CheckinControls } from "../event-forms";
 
 export const metadata: Metadata = { title: "Presenter view" };
 
-export default async function PresentPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PresentPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ done?: string }> }) {
   const session = await requirePermission("events.manage", "events.checkin");
   const { id } = await params;
+  const { done } = await searchParams;
   const db = await supabaseServer();
   const [{ data: event }, { data: trainers }] = await Promise.all([
     db.from("events").select("id, title, starts_at, ends_at, status, checkin_open, registration_mode").eq("id", id).maybeSingle(),
@@ -37,13 +39,14 @@ export default async function PresentPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="space-y-6">
+      <DoneNotice done={done} messages={{ checkin_open: "Check-in is open.", checkin_closed: "Check-in is closed.", checkin_rotated: "New session code shown. The old code no longer works." }} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm text-muted"><Link href={`/events/${id}?tab=checkin`} className="hover:underline">Back to event</Link></p>
           <h1 className="text-2xl font-semibold text-navy-900 sm:text-3xl">{event.title}</h1>
           <p className="text-muted">{formatDateTime(event.starts_at)} to {formatTime(event.ends_at)}</p>
         </div>
-        {event.status === "published" && event.registration_mode === "hub" && <CheckinControls eventId={id} open={event.checkin_open} />}
+        {event.status === "published" && event.registration_mode === "hub" && <CheckinControls eventId={id} open={event.checkin_open} from="present" />}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">

@@ -7,16 +7,14 @@ import { kickJobs } from "@/server/jobs/kick";
 export const registerForEvent = defineAction(z.object({ event_id: zf.uuid() }), async (i, { db }) => {
   const r = check(await db.rpc("event_register", { p_event: i.event_id })) as { status: string; already?: boolean; waitlist_position?: number };
   kickJobs();
-  const message = r.already ? "You are already booked." : r.status === "waitlisted"
-    ? `The event is full, so you are on the waiting list (position ${r.waitlist_position}). We will email you if a place becomes free.`
-    : "You're booked. A confirmation email is on its way.";
-  return { message, revalidate: ["/academy/events", `/academy/events/${i.event_id}`] };
+  const done = r.already ? "already" : r.status === "waitlisted" ? "waitlisted" : "booked";
+  return { revalidate: ["/academy/events", `/academy/events/${i.event_id}`], redirect: `/academy/events/${i.event_id}?done=${done}` };
 });
 
 export const cancelMyPlace = defineAction(z.object({ event_id: zf.uuid(), registration_id: zf.uuid() }), async (i, { db }) => {
   check(await db.rpc("event_cancel_registration", { p_registration: i.registration_id }));
   kickJobs();
-  return { message: "Your place has been cancelled. Thank you for letting us know.", revalidate: ["/academy/events", `/academy/events/${i.event_id}`] };
+  return { revalidate: ["/academy/events", `/academy/events/${i.event_id}`], redirect: `/academy/events/${i.event_id}?done=cancelled` };
 });
 
 export const giveFeedback = defineAction(z.object({

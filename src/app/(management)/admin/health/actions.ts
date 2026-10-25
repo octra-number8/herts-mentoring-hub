@@ -11,7 +11,9 @@ export const resolveFailure = defineAction(
   z.object({ id: zf.uuid(), retry: z.enum(["true", "false"]) }),
   async (i, { db }) => {
     const result = check(await db.rpc("integration_failure_resolve", { p_failure: i.id, p_retry: i.retry === "true" })) as string;
-    return { message: i.retry === "true" ? `Retry: ${result}. Run background jobs to process it now.` : "Marked as resolved.", revalidate: R };
+    void result;
+    // The row disappears once handled, so confirm on the page via a fixed message key.
+    return { revalidate: R, redirect: `/admin/health?done=${i.retry === "true" ? "failure_retry" : "failure_resolved"}` };
   },
   { permission: ["system.health"] },
 );
@@ -20,7 +22,7 @@ export const retryEmail = defineAction(
   z.object({ id: zf.uuid() }),
   async (i, { db }) => {
     check(await db.rpc("outbox_retry", { p_id: i.id }));
-    return { message: "Email queued to send again.", revalidate: R };
+    return { revalidate: R, redirect: "/admin/health?done=email_retry" };
   },
   { permission: ["system.health"] },
 );

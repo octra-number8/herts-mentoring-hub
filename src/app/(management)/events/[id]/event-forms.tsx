@@ -118,18 +118,19 @@ export function WaitlistMove({ eventId, registrationId, first, last }: { eventId
   );
 }
 
-export function CheckinControls({ eventId, open }: { eventId: string; open: boolean }) {
+export function CheckinControls({ eventId, open, from = "event" }: { eventId: string; open: boolean; from?: "event" | "present" }) {
   return (
     <div className="flex flex-wrap items-start gap-2">
       {open ? (
-        <ActionButton action={setCheckin} fields={{ event_id: eventId, open: "false" }} size="md">Close check-in</ActionButton>
+        <ActionButton action={setCheckin} fields={{ event_id: eventId, open: "false", from }} size="md">Close check-in</ActionButton>
       ) : (
-        <ActionButton action={setCheckin} fields={{ event_id: eventId, open: "true" }} size="md" variant="teal">Open check-in</ActionButton>
+        <ActionButton action={setCheckin} fields={{ event_id: eventId, open: "true", from }} size="md" variant="teal">Open check-in</ActionButton>
       )}
       <ActionForm action={setCheckin} className="inline-block space-y-2">
         <input type="hidden" name="event_id" value={eventId} />
         <input type="hidden" name="open" value="true" />
         <input type="hidden" name="rotate" value="on" />
+        <input type="hidden" name="from" value={from} />
         <FormActions><SubmitButton variant="subtle" pendingText="Working…">New session code</SubmitButton></FormActions>
       </ActionForm>
     </div>

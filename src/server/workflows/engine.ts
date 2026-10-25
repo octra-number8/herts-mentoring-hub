@@ -182,6 +182,16 @@ export async function processWorkflowRuns(db: DB, limit = 25) {
     const ev = run.domain_events as unknown as DomainEvent;
     try {
       const steps = await executeActions(db, wf, ev, false);
+      const skipped = steps.filter((s) => !s.ok);
+      if (skipped.length) {
+        // A skipped action (e.g. its author no longer holds the permission) needs attention:
+        // record the run as failed rather than hiding it behind "succeeded".
+        await db.from("workflow_runs").update({ status: "failed", results: steps, attempts: run.attempts + 1, finished_at: new Date().toISOString(),
+          error: skipped.map((s) => `${s.action}: ${s.detail}`).join("; ").slice(0, 500) }).eq("id", id);
+        await db.from("integration_failures").insert({ org_id: wf.org_id, integration_key: "workflow", operation: wf.name, message: `Actions skipped: ${skipped.map((s) => s.action).join(", ")}`, context: { run_id: id }, retryable: false });
+        stats.failed++;
+        continue;
+      }
       await db.from("workflow_runs").update({ status: "succeeded", results: steps, attempts: run.attempts + 1, finished_at: new Date().toISOString(), error: null }).eq("id", id);
       stats.succeeded++;
     } catch (e) {

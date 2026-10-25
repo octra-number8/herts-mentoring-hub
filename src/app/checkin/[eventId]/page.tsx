@@ -32,7 +32,7 @@ export default async function CheckinPage({ params, searchParams }: { params: Pr
       <p className="mt-1 mb-5 text-sm text-muted">{formatDateTime(e.starts_at)} to {formatTime(e.ends_at)}</p>
       <p className="mb-4 text-sm">Signed in as <strong>{session.displayName}</strong>.</p>
       {reg?.status === "attended" ? (
-        <Alert tone="success" title="You're already checked in">Enjoy the session.</Alert>
+        <Alert tone="success" title="You're checked in">Your attendance is recorded. Enjoy the session.</Alert>
       ) : !reg || !["confirmed"].includes(reg.status) ? (
         <Alert tone="warning" title="We could not find a confirmed place for you">
           {reg?.status === "waitlisted" ? "You are on the waiting list for this session. " : ""}Please speak to an organiser, who can record your attendance. <Link className="underline" href={`/academy/events/${e.id}`}>View the event</Link>

@@ -157,22 +157,19 @@ export const sendTestEmail = defineAction(z.object({ campaign_id: zf.uuid() }), 
 export const submitCampaign = defineAction(z.object({ campaign_id: zf.uuid() }), async (i, { db }) => {
   const status = check(await db.rpc("campaign_submit", { p_campaign: i.campaign_id })) as string;
   kickJobs();
-  return {
-    message: status === "pending_approval" ? "Submitted for approval. Approvers have been notified." : "Approved and queued for sending.",
-    revalidate: [`/communications/${i.campaign_id}`, "/communications"],
-  };
+  return { revalidate: [`/communications/${i.campaign_id}`, "/communications"], redirect: `/communications/${i.campaign_id}?tab=review&done=${status === "pending_approval" ? "submitted" : "queued"}` };
 }, { permission: ["comms.use"] });
 
 export const decideCampaign = defineAction(z.object({ campaign_id: zf.uuid(), decision: z.enum(["approve", "return"]), note: zf.optionalText(1000) }), async (i, { db }) => {
   if (i.decision === "return" && !i.note) throw new UserError("Add a note explaining what needs to change.");
   const status = check(await db.rpc("campaign_decide", { p_campaign: i.campaign_id, p_approve: i.decision === "approve", p_note: i.note ?? undefined })) as string;
   kickJobs();
-  return { message: status === "draft" ? "Returned to the sender with your note." : "Approved. Sending will start shortly, or at the scheduled time.", revalidate: [`/communications/${i.campaign_id}`, "/communications"] };
+  return { revalidate: [`/communications/${i.campaign_id}`, "/communications"], redirect: `/communications/${i.campaign_id}?tab=review&done=${status === "draft" ? "returned" : "approved"}` };
 }, { permission: ["comms.approve"] });
 
 export const cancelCampaign = defineAction(z.object({ campaign_id: zf.uuid() }), async (i, { db }) => {
   check(await db.rpc("campaign_cancel", { p_campaign: i.campaign_id }));
-  return { message: "Campaign cancelled. Nothing further will be sent.", revalidate: [`/communications/${i.campaign_id}`, "/communications"] };
+  return { revalidate: [`/communications/${i.campaign_id}`, "/communications"], redirect: `/communications/${i.campaign_id}?tab=review&done=cancelled` };
 }, { permission: ["comms.use"] });
 
 export const duplicateCampaign = defineAction(z.object({ campaign_id: zf.uuid() }), async (i, { db, session }) => {

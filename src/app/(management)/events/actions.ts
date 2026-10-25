@@ -78,7 +78,7 @@ export const publishEvent = defineAction(z.object({ event_id: zf.uuid() }), asyn
   if (e.registration_mode === "external" && !safeBookingUrl(e.external_booking_url)) throw new UserError("Add a valid Octra-Lodge booking link before publishing.");
   const res = await db.from("events").update({ status: "published" }).eq("id", i.event_id).eq("status", "draft").select("id");
   if (!check(res).length) throw new UserError("You do not have permission to publish this event.");
-  return { message: "Published. The event is now visible to its audience.", revalidate: ["/events", `/events/${i.event_id}`] };
+  return { revalidate: ["/events", `/events/${i.event_id}`], redirect: `/events/${i.event_id}?done=published` };
 }, { permission: ["events.manage"] });
 
 export const unpublishEvent = defineAction(z.object({ event_id: zf.uuid() }), async (i, { db }) => {
@@ -86,19 +86,19 @@ export const unpublishEvent = defineAction(z.object({ event_id: zf.uuid() }), as
   if (count) throw new UserError("People have registered, so this event cannot return to draft. Cancel it instead if it is not going ahead.");
   const res = await db.from("events").update({ status: "draft" }).eq("id", i.event_id).eq("status", "published").select("id");
   if (!check(res).length) throw new UserError("Only published events can return to draft.");
-  return { message: "Returned to draft.", revalidate: ["/events", `/events/${i.event_id}`] };
+  return { revalidate: ["/events", `/events/${i.event_id}`], redirect: `/events/${i.event_id}?done=draft` };
 }, { permission: ["events.manage"] });
 
 export const cancelEvent = defineAction(z.object({ event_id: zf.uuid(), reason: zf.required("Reason", 1000) }), async (i, { db }) => {
   check(await db.rpc("event_cancel", { p_event: i.event_id, p_reason: i.reason }));
   kickJobs();
-  return { message: "Event cancelled. Everyone booked will be told.", revalidate: ["/events", `/events/${i.event_id}`] };
+  return { revalidate: ["/events", `/events/${i.event_id}`], redirect: `/events/${i.event_id}?done=cancelled` };
 }, { permission: ["events.manage"] });
 
 export const completeEvent = defineAction(z.object({ event_id: zf.uuid() }), async (i, { db }) => {
   check(await db.rpc("event_complete", { p_event: i.event_id }));
   kickJobs();
-  return { message: "Event completed. Anyone still confirmed but not checked in is recorded as not attending; you can correct this below.", revalidate: ["/events", `/events/${i.event_id}`] };
+  return { revalidate: ["/events", `/events/${i.event_id}`], redirect: `/events/${i.event_id}?tab=registrations&done=completed` };
 }, { permission: ["events.manage"] });
 
 // ----- Trainers, invitations, resources ------------------------------------------
@@ -155,14 +155,14 @@ export const removeResource = defineAction(z.object({ event_id: zf.uuid(), resou
 export const registerPerson = defineAction(z.object({ event_id: zf.uuid(), person_id: zf.uuid("Person") }), async (i, { db }) => {
   const r = check(await db.rpc("event_register_person", { p_event: i.event_id, p_person: i.person_id })) as { status: string; already?: boolean; waitlist_position?: number };
   kickJobs();
-  const msg = r.already ? "Already registered." : r.status === "waitlisted" ? `Added to the waiting list (position ${r.waitlist_position}).` : "Registered. A confirmation email is on its way.";
-  return { message: msg, revalidate: [`/events/${i.event_id}`] };
+  const done = r.already ? "already" : r.status === "waitlisted" ? "waitlisted" : "registered";
+  return { revalidate: [`/events/${i.event_id}`], redirect: `/events/${i.event_id}?tab=registrations&done=${done}` };
 }, { permission: ["events.manage"] });
 
 export const cancelRegistration = defineAction(z.object({ event_id: zf.uuid(), registration_id: zf.uuid() }), async (i, { db }) => {
   check(await db.rpc("event_cancel_registration", { p_registration: i.registration_id }));
   kickJobs();
-  return { message: "Registration cancelled. The waiting list has been checked for anyone who can now be offered a place.", revalidate: [`/events/${i.event_id}`] };
+  return { revalidate: [`/events/${i.event_id}`], redirect: `/events/${i.event_id}?tab=registrations&done=reg_cancelled` };
 }, { permission: ["events.manage", "events.checkin"] });
 
 export const setAttendance = defineAction(z.object({
@@ -170,7 +170,7 @@ export const setAttendance = defineAction(z.object({
 }), async (i, { db }) => {
   check(await db.rpc("event_set_attendance", { p_registration: i.registration_id, p_status: i.status, p_reason: i.reason }));
   kickJobs();
-  return { message: "Attendance updated. The change and your reason are recorded in the audit log.", revalidate: [`/events/${i.event_id}`] };
+  return { revalidate: [`/events/${i.event_id}`], redirect: `/events/${i.event_id}?tab=registrations&done=attendance` };
 }, { permission: ["events.manage", "events.checkin"] });
 
 export const moveWaitlist = defineAction(z.object({ event_id: zf.uuid(), registration_id: zf.uuid(), direction: z.enum(["up", "down"]) }), async (i, { db }) => {
@@ -188,11 +188,12 @@ export const moveWaitlist = defineAction(z.object({ event_id: zf.uuid(), registr
   return { message: "Waiting list reordered.", revalidate: [`/events/${i.event_id}`] };
 }, { permission: ["events.manage", "events.checkin"] });
 
-export const setCheckin = defineAction(z.object({ event_id: zf.uuid(), open: z.enum(["true", "false"]), rotate: zf.checkbox() }), async (i, { db }) => {
+export const setCheckin = defineAction(z.object({ event_id: zf.uuid(), open: z.enum(["true", "false"]), rotate: zf.checkbox(), from: z.enum(["event", "present"]).default("event") }), async (i, { db }) => {
   check(await db.rpc("event_set_checkin", { p_event: i.event_id, p_open: i.open === "true", p_rotate: i.rotate }));
+  const done = i.open === "true" ? (i.rotate ? "checkin_rotated" : "checkin_open") : "checkin_closed";
   return {
-    message: i.open === "true" ? (i.rotate ? "Check-in is open with a new session code." : "Check-in is open.") : "Check-in is closed.",
     revalidate: [`/events/${i.event_id}`, `/events/${i.event_id}/present`],
+    redirect: i.from === "present" ? `/events/${i.event_id}/present?done=${done}` : `/events/${i.event_id}?tab=checkin&done=${done}`,
   };
 }, { permission: ["events.manage", "events.checkin"] });
 

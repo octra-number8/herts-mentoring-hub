@@ -18,7 +18,15 @@ const INTEGRATION: Record<string, string> = { resend: "Email (Resend)", octra_lo
 const STATUS_TONE: Record<string, Tone> = { active: "success", simulated: "teal", not_configured: "neutral", error: "danger", disabled: "neutral" };
 const STATUS_LABEL: Record<string, string> = { active: "Working", simulated: "Simulated", not_configured: "Not configured", error: "Error", disabled: "Disabled" };
 
-export default async function HealthPage() {
+const DONE: Record<string, string> = {
+  email_retry: "Email queued to send again, to the person's current address. Run background jobs to send it now.",
+  failure_retry: "Queued to retry. Run background jobs to process it now.",
+  failure_resolved: "Marked as resolved.",
+};
+
+export default async function HealthPage({ searchParams }: { searchParams: Promise<{ done?: string }> }) {
+  const doneKey = (await searchParams).done;
+  const done = doneKey ? DONE[doneKey] : undefined;
   const session = await requirePermission("system.health");
   const db = await supabaseServer();
   const env = serverEnv();
@@ -51,6 +59,7 @@ export default async function HealthPage() {
     <>
       <PageHeader breadcrumbs={[{ href: "/admin", label: "Administration" }]} title="System health"
         description="Integrations, background processing and anything waiting for attention." />
+      {done && <div className="mb-6"><Alert tone="success">{done}</Alert></div>}
 
       <Panel title="Background jobs" className="mb-6" description="Normally run every few minutes by the scheduler and shortly after user actions.">
         <ActionButton action={runJobsNow} variant="primary" size="md">Run background jobs now</ActionButton>

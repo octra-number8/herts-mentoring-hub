@@ -13,11 +13,14 @@ export function DialogForm({ trigger, title, description, action, children, subm
   wide?: boolean; submitVariant?: "primary" | "danger" | "teal";
 }) {
   const [open, setOpen] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
   return (
     <>
-      <button type="button" className={buttonClass(triggerVariant, triggerSize)} onClick={() => setOpen(true)}>{trigger}</button>
+      <button type="button" className={buttonClass(triggerVariant, triggerSize)} onClick={() => { setDone(null); setOpen(true); }}>{trigger}</button>
+      {/* The dialog closes on success, so its confirmation is announced beside the trigger. */}
+      {done && <span role="status" className="ml-2 text-sm font-medium text-success-700">{done}</span>}
       <Dialog title={title} description={description} open={open} onOpenChange={setOpen} wide={wide}>
-        <ActionForm action={action} onSuccess={() => setOpen(false)}>
+        <ActionForm action={action} onSuccess={(s) => { setOpen(false); setDone(s.message ?? "Saved."); }}>
           {children}
           <FormActions>
             <SubmitButton variant={submitVariant}>{submitLabel}</SubmitButton>

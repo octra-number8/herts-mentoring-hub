@@ -45,7 +45,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
         <>
           <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
             {items.map((n) => (
-              <li key={n.id} className={cn("flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:px-5", !n.read_at && "bg-navy-50/60")}>
+              <li key={n.id} className={cn("flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-5", !n.read_at && "bg-navy-50/60")}>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 text-[13px] text-muted">
                     {!n.read_at && <Badge tone="navy">New</Badge>}

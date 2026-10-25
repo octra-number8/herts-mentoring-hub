@@ -95,7 +95,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
       ) : (
         <Table caption="Events">
           <THead>
-            <TH>When</TH><TH>Event</TH><TH className="hidden md:table-cell">Audience</TH><TH>Status</TH><TH className="hidden sm:table-cell" align="right">Booked</TH>
+            <TH className="hidden sm:table-cell">When</TH><TH>Event</TH><TH className="hidden md:table-cell">Audience</TH><TH>Status</TH><TH className="hidden sm:table-cell" align="right">Booked</TH>
           </THead>
           <TBody>
             {events.map((e) => {
@@ -103,9 +103,10 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
               const centre = (e.meeting_centres as unknown as { name: string } | null)?.name;
               return (
                 <TR key={e.id}>
-                  <TD className="whitespace-nowrap tabular-nums">{formatDateTime(e.starts_at)}</TD>
+                  <TD className="hidden whitespace-nowrap tabular-nums sm:table-cell">{formatDateTime(e.starts_at)}</TD>
                   <TD>
                     <RowLink href={`/events/${e.id}`}>{e.title}</RowLink>
+                    <div className="text-[13px] tabular-nums text-slate-ink sm:hidden">{formatDateTime(e.starts_at)}</div>
                     <div className="text-[13px] text-muted">{kindLabel(e.kind)} · {formatLabel(e.format)}{centre ? ` · ${centre}` : e.location ? ` · ${e.location}` : ""}</div>
                   </TD>
                   <TD className="hidden md:table-cell">{visibilityLabel(e.visibility)}</TD>
