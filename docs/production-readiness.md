@@ -54,3 +54,11 @@ Note on cost: a Supabase project on a paid organisation is billed per project (c
 - [ ] First live import: start with one Lodge, check reconciliation, then the Province.
 - [ ] Invite the Provincial team (MFA set-up at first sign-in), then learners.
 - [ ] Remove the "Synthetic test data" environment label (`organisations.settings.environment_label`).
+
+## Remaining build-side items (honest list)
+
+- **(build) Application-level rate limiting.** Sign-in, email links and password reset are rate-limited by Supabase Auth. Public endpoints (`/whats-on`, `/unsubscribe`, `/api/calendar`, `/api/webhooks/resend`) rely on token secrecy and Vercel's platform protection; add Vercel WAF rate-limit rules or an app-level limiter before go-live.
+- **(build) Load check on staging** with realistic volumes (Hertfordshire's full Lodge and membership numbers). Local testing used 40 Lodges and about 800 synthetic members.
+- **(build) Cross-browser checks.** Automated tests run in Chromium; check Safari (iPhone) and Firefox manually or add Playwright projects.
+- **Manual screen-reader review** of the main journeys (automated axe checks pass).
+- **Hosted staging environment.** Supabase staging project ($10/month, approved) and Vercel preview deployments are ready to create once Vercel access is available; see `docs/deployment.md`.
