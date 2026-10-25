@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 type Item = { href: string; label: string; match?: string[] };
@@ -55,12 +55,13 @@ export function TopNav({ items }: { items: Item[] }) {
 
 /** Mobile menu disclosure; closes on navigation. */
 export function MobileMenu({ children, label = "Menu", dark }: { children: React.ReactNode; label?: string; dark?: boolean }) {
-  const [open, setOpen] = useState(false);
+  // Remember the path the menu was opened on, so navigating closes it.
   const path = usePathname();
-  useEffect(() => setOpen(false), [path]);
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const open = openAt === path;
   return (
     <div className="lg:hidden">
-      <button type="button" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen((o) => !o)}
+      <button type="button" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpenAt(open ? null : path)}
         className={cn("inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium", dark ? "text-white hover:bg-white/10" : "text-navy-900 hover:bg-navy-50")}>
         <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
         {label}
