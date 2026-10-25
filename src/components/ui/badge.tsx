@@ -28,3 +28,10 @@ const STATUS_TONES: Record<string, Tone> = {
   high: "danger", normal: "neutral", low: "neutral",
 };
 export const statusTone = (s?: string | null): Tone => (s ? STATUS_TONES[s] ?? "neutral" : "neutral");
+
+/** Operational mentoring status: positions, never quality judgements, so no red. */
+const MENTORING_TONES: Record<string, Tone> = {
+  routine: "neutral", contact_due: "navy", support_requested: "teal", active_assistance: "teal",
+  awaiting_response: "warning", review_required: "warning", unable_to_engage: "neutral", closed: "neutral",
+};
+export const mentoringStatusTone = (key?: string | null): Tone => (key ? MENTORING_TONES[key] ?? "navy" : "neutral");

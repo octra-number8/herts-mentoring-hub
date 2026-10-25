@@ -1,0 +1,32 @@
+import { marked } from "marked";
+import sanitizeHtml from "sanitize-html";
+
+marked.setOptions({ gfm: true, breaks: false });
+
+const ALLOWED = {
+  allowedTags: ["h2", "h3", "h4", "p", "ul", "ol", "li", "strong", "em", "a", "blockquote", "br", "hr", "code", "pre", "table", "thead", "tbody", "tr", "th", "td", "img", "span"],
+  allowedAttributes: { a: ["href", "title", "target", "rel"], img: ["src", "alt", "width", "height"], span: ["class"] },
+  allowedSchemes: ["https", "http", "mailto", "tel"],
+  transformTags: { a: sanitizeHtml.simpleTransform("a", { rel: "noopener noreferrer" }) },
+};
+
+/** Markdown to sanitised HTML. Safe for content written by authorised users. */
+export function renderMarkdown(md: string | null | undefined): string {
+  if (!md) return "";
+  return sanitizeHtml(marked.parse(md, { async: false }) as string, ALLOWED);
+}
+
+export function stripMarkdown(md: string): string {
+  return sanitizeHtml(marked.parse(md, { async: false }) as string, { allowedTags: [], allowedAttributes: {} }).replace(/\n{3,}/g, "\n\n").trim();
+}
+
+const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+/** Replace {{name}} placeholders. Values are escaped for Markdown/HTML safety. */
+export function interpolate(template: string, vars: Record<string, string | number | null | undefined>, opts: { escape?: boolean } = { escape: true }): string {
+  return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, k: string) => {
+    const v = vars[k];
+    if (v === null || v === undefined) return "";
+    return opts.escape === false ? String(v) : escapeHtml(String(v));
+  });
+}

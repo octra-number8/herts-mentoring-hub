@@ -6475,6 +6475,22 @@ export type Database = {
         Returns: undefined
       }
       admin_bootstrap_org: { Args: { p_org: string }; Returns: undefined }
+      admin_generate_quarterly: {
+        Args: { p_org: string; p_quarter: number; p_year: number }
+        Returns: string
+      }
+      admin_notify: {
+        Args: {
+          p_account: string
+          p_body?: string
+          p_dedupe?: string
+          p_essential?: boolean
+          p_link?: string
+          p_title: string
+          p_type: string
+        }
+        Returns: string
+      }
       admin_record_audit: {
         Args: {
           p_action: string
@@ -6484,6 +6500,10 @@ export type Database = {
           p_org: string
         }
         Returns: undefined
+      }
+      admin_report_period_data: {
+        Args: { p_end: string; p_org: string; p_start: string }
+        Returns: Json
       }
       allocate_lodge: {
         Args: {
@@ -6600,6 +6620,15 @@ export type Database = {
       }
       import_commit: { Args: { p_batch: string }; Returns: Json }
       knowledge_publish: { Args: { p_article: string }; Returns: undefined }
+      log_export: {
+        Args: {
+          p_dataset: string
+          p_filters: Json
+          p_format: string
+          p_rows: number
+        }
+        Returns: undefined
+      }
       log_sensitive_access: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: undefined
@@ -6619,6 +6648,10 @@ export type Database = {
       report_generate_quarterly: {
         Args: { p_quarter: number; p_year: number }
         Returns: string
+      }
+      report_period_data: {
+        Args: { p_end: string; p_start: string }
+        Returns: Json
       }
       report_quarterly_transition: {
         Args: { p_report: string; p_to: string }

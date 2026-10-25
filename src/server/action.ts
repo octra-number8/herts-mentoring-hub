@@ -64,6 +64,7 @@ export function defineAction<S extends z.ZodType>(
         const k = issue.path.join(".");
         if (!fieldErrors[k]) fieldErrors[k] = issue.message;
       }
+      if (process.env.NODE_ENV !== "production") console.warn("Action validation failed", fieldErrors);
       return { error: "Please check the highlighted fields.", fieldErrors, nonce };
     }
     let result: HandlerResult;
@@ -81,10 +82,13 @@ export function defineAction<S extends z.ZodType>(
   };
 }
 
-/** Throw a friendly error when a Supabase call fails. */
-export function check<T>(res: { data: T; error: { code?: string; message?: string } | null }): T {
+/**
+ * Throw a friendly error when a Supabase call fails, otherwise return its data.
+ * Typed non-null for convenience; calls without .select() return null data.
+ */
+export function check<T>(res: { data: T; error: { code?: string; message?: string } | null }): NonNullable<T> {
   if (res.error) throw new UserError(dbErrorMessage(res.error));
-  return res.data;
+  return res.data as NonNullable<T>;
 }
 
 /** Common Zod helpers for form input. */
@@ -97,7 +101,7 @@ export const zf = {
   date: (label = "Date") => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, `${label} is required`),
   optionalDate: () => z.string().optional().transform((v) => (v ? v : null)).pipe(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()),
   datetime: (label = "Date and time") => z.string().min(1, `${label} is required`).transform((v) => new Date(v).toISOString()),
-  checkbox: () => z.union([z.literal("on"), z.literal("true"), z.literal("false"), z.undefined()]).transform((v) => v === "on" || v === "true"),
+  checkbox: () => z.string().optional().transform((v) => v === "on" || v === "true"),
   int: (label = "Number") => z.coerce.number({ message: `${label} must be a number` }).int(),
   optionalInt: () => z.string().optional().transform((v) => (v ? Number(v) : null)).pipe(z.number().int().nullable()),
   list: () => z.array(z.string()).optional().default([]),

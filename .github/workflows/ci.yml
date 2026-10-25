@@ -34,6 +34,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build
         run: npm run build
+      - name: Fresh synthetic data for browser tests
+        run: npm run db:reset
       - name: End-to-end and accessibility tests
         run: npm run test:e2e
       - uses: actions/upload-artifact@v5

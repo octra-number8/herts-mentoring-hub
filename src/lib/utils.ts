@@ -22,6 +22,7 @@ export function relativeDays(d?: string | Date | null): string {
 }
 
 export const todayIso = () => new Date().toISOString().slice(0, 10);
+export const isoInDays = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 
 export function monthsBetween(a: string | Date, b: string | Date = new Date()): number {
   const x = new Date(a), y = new Date(b);

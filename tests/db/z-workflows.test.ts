@@ -249,7 +249,7 @@ describe("Scenario 10: quarterly report", () => {
     expect((q2 as any).report_snapshots.data).toEqual(before);
     expect((await pgm.rpc("report_generate_quarterly", { p_year: 2026, p_quarter: 3 })).error).not.toBeNull();
     // Recomputing the historic period from effective dates gives the same allocation count.
-    const { data: recomputed } = await service().rpc("report_period_data_admin", { p_org: secrets.orgId, p_start: "2026-07-01", p_end: "2026-09-30" });
+    const { data: recomputed } = await service().rpc("admin_report_period_data", { p_org: secrets.orgId, p_start: "2026-07-01", p_end: "2026-09-30" });
     if (recomputed) expect(recomputed.lodges.allocated).toBe(before.lodges.allocated);
   });
 });
