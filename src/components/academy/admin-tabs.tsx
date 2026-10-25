@@ -10,6 +10,8 @@ const TABS: { key: string; label: string; href: string; any: Permission[] }[] = 
   { key: "pathways", label: "Pathways", href: "/learning/pathways", any: ["academy.publish"] },
   { key: "badges", label: "Badges", href: "/learning/badges", any: ["academy.publish"] },
   { key: "resources", label: "Solomon links", href: "/learning/resources", any: ["academy.publish"] },
+  // Authoring lives in the Academy area (shared with L&D contributors); linked here so it can be found.
+  { key: "authoring", label: "Course authoring", href: "/academy/author", any: ["academy.author"] },
 ];
 
 /** Section navigation for Academy administration; tabs follow permissions. */

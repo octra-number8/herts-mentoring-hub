@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MonthlyActivityChart, type MonthPoint } from "@/components/academy/admin-charts";
 import { AcademyAdminTabs } from "@/components/academy/admin-tabs";
+import { LinkButton } from "@/components/ui/button";
 import { EmptyState, PageHeader, Panel, Stat } from "@/components/ui/layout";
 import { TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { can, requirePermission } from "@/server/session";
@@ -56,7 +57,8 @@ export default async function AcademyAdminOverview() {
 
   return (
     <>
-      <PageHeader title="Academy" description="Learning across the Province: enrolments, completions, approvals and recognition." />
+      <PageHeader title="Academy" description="Learning across the Province: enrolments, completions, approvals and recognition."
+        actions={can(session, "academy.author") ? <LinkButton href="/academy/author" variant="primary">Create or edit courses</LinkButton> : undefined} />
       <AcademyAdminTabs session={session} current="overview" />
       <div className="space-y-6">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
