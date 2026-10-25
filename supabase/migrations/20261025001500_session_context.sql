@@ -33,3 +33,11 @@ create or replace function public.admin_bootstrap_org(p_org uuid) returns void
 language sql security definer set search_path = public, pg_temp as $$ select app.bootstrap_org(p_org) $$;
 revoke execute on function public.admin_bootstrap_org(uuid) from anon, public, authenticated;
 grant execute on function public.admin_bootstrap_org(uuid) to service_role;
+
+-- Service-role only: audit events raised by system processes.
+create or replace function public.admin_record_audit(p_org uuid, p_action text, p_entity_type text, p_entity_id text, p_details jsonb default '{}'::jsonb)
+returns void language sql security definer set search_path = public, pg_temp as $$
+  insert into public.audit_events(org_id, action, entity_type, entity_id, details) values (p_org, p_action, p_entity_type, p_entity_id, coalesce(p_details, '{}'::jsonb))
+$$;
+revoke execute on function public.admin_record_audit(uuid, text, text, text, jsonb) from anon, public, authenticated;
+grant execute on function public.admin_record_audit(uuid, text, text, text, jsonb) to service_role;

@@ -1,26 +1,88 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Hertfordshire Mentoring Hub design tokens.
+ * Colours follow the Hertfordshire Mentoring style guide (A3a): navy #003668,
+ * teal #157A7C, light blue #BFD6EA, slate #3D4A57. Typeface: DM Sans.
+ */
+@theme {
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --color-navy-950: #021d38;
+  --color-navy-900: #03294f;
+  --color-navy-800: #003668;
+  --color-navy-700: #0a4f72;
+  --color-navy-600: #1d5f8c;
+  --color-navy-100: #dde9f5;
+  --color-navy-50: #f2f7fc;
+
+  --color-teal-800: #0f5e60;
+  --color-teal-700: #157a7c;
+  --color-teal-600: #1b8e90;
+  --color-teal-100: #d6efee;
+  --color-teal-50: #eef8f8;
+
+  --color-sky-200: #bfd6ea;
+
+  --color-ink: #1d2733;
+  --color-slate-ink: #3d4a57;
+  --color-muted: #5d6b7a;
+  --color-line: #dbe3ec;
+  --color-surface: #ffffff;
+  --color-canvas: #f5f8fb;
+
+  --color-success-700: #1f6b3a;
+  --color-success-50: #ecf7f0;
+  --color-warning-800: #7a4b00;
+  --color-warning-50: #fff6e5;
+  --color-danger-700: #a1281e;
+  --color-danger-50: #fdeeec;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-teal-600);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--color-sky-200);
+}
+
+@layer components {
+  .prose-hub {
+    color: var(--color-ink);
+    max-width: 68ch;
+  }
+  .prose-hub h2 { font-size: 1.35rem; font-weight: 600; margin: 1.6rem 0 0.6rem; color: var(--color-navy-800); }
+  .prose-hub h3 { font-size: 1.1rem; font-weight: 600; margin: 1.3rem 0 0.4rem; color: var(--color-navy-800); }
+  .prose-hub p { margin: 0.7rem 0; }
+  .prose-hub ul { list-style: disc; padding-left: 1.3rem; margin: 0.7rem 0; }
+  .prose-hub ol { list-style: decimal; padding-left: 1.3rem; margin: 0.7rem 0; }
+  .prose-hub li { margin: 0.25rem 0; }
+  .prose-hub a { color: var(--color-navy-700); text-decoration: underline; text-underline-offset: 2px; }
+  .prose-hub strong { font-weight: 600; }
+  .prose-hub blockquote { border-left: 3px solid var(--color-teal-700); padding-left: 1rem; color: var(--color-slate-ink); }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
 }

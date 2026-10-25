@@ -6474,6 +6474,17 @@ export type Database = {
         Args: { p_account: string; p_reason: string; p_status: string }
         Returns: undefined
       }
+      admin_bootstrap_org: { Args: { p_org: string }; Returns: undefined }
+      admin_record_audit: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_entity_id: string
+          p_entity_type: string
+          p_org: string
+        }
+        Returns: undefined
+      }
       allocate_lodge: {
         Args: {
           p_ends?: string
@@ -6538,11 +6549,11 @@ export type Database = {
         Returns: undefined
       }
       end_allocation: {
-        Args: { p_allocation: string; p_ends?: string }
+        Args: { p_allocation: string; p_effective?: string }
         Returns: undefined
       }
       end_provincial_appointment: {
-        Args: { p_ends?: string; p_person: string; p_reason?: string }
+        Args: { p_effective?: string; p_person: string; p_reason?: string }
         Returns: Json
       }
       event_cancel: {
