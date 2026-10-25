@@ -13,7 +13,7 @@ EMAIL_DRIVER=smtp
 SMTP_HOST=127.0.0.1
 SMTP_PORT=55425
 EMAIL_FROM="Hertfordshire Mentoring Hub <hub@localhost>"
-CRON_SECRET=ci-cron-secret
+CRON_SECRET=local-cron-secret
 EMAIL_SIMULATE_FAILURES=1
 ENV
 echo ".env.local written"

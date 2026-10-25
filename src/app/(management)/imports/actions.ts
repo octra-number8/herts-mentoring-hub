@@ -26,7 +26,7 @@ export const uploadImport = defineAction(
     file: z.instanceof(File, { message: "Choose a file to upload" }),
     source: z.enum(["hermes", "adelphi", "portal", "other"]),
     report_scope: z.enum(["partial", "full"]),
-    template_id: zf.optionalUuid(),
+    template_id: z.union([z.literal("manual"), z.string().uuid(), z.literal("")]).optional(),
   }),
   async (i, { db, session }) => {
     if (!i.file.size) throw new UserError("Choose a file to upload.");
@@ -50,7 +50,7 @@ export const uploadImport = defineAction(
       is_partial: i.report_scope === "partial" }).select("id").single());
 
     const { data: templates } = await db.from("import_templates").select("id, name, mapping, header_signature");
-    const chosen = i.template_id ? templates?.find((t) => t.id === i.template_id) : matchTemplate(table.headers, (templates ?? []) as never);
+    const chosen = i.template_id === "manual" ? null : i.template_id ? templates?.find((t) => t.id === i.template_id) : matchTemplate(table.headers, (templates ?? []) as never);
     if (chosen) {
       const mapping = chosen.mapping as Record<string, string>;
       const problems = checkMapping(mapping, table.headers);

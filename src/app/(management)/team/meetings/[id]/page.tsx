@@ -12,6 +12,7 @@ import { renderMarkdown } from "@/lib/markdown";
 import { formatDate, formatDateTime, label } from "@/lib/utils";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
+import { WithAccounts } from "@/components/members/with-accounts";
 
 export const metadata: Metadata = { title: "Meeting" };
 
@@ -45,7 +46,7 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
   const itemTitle = (iid: string | null) => (items ?? []).find((i) => i.id === iid)?.title;
 
   return (
-    <>
+    <WithAccounts>
       <PageHeader
         breadcrumbs={[{ href: "/team", label: "Team" }, { href: "/team/meetings", label: "Meetings" }]}
         title={m.title}
@@ -160,6 +161,6 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
           </Panel>
         </div>
       </div>
-    </>
+    </WithAccounts>
   );
 }

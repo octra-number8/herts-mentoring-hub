@@ -74,16 +74,17 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
       ) : (
         <Table caption="Support requests">
           <THead>
-            <TH>Reference</TH><TH>Request</TH><TH className="hidden md:table-cell">Lodge</TH><TH className="hidden lg:table-cell">Owner</TH>
+            <TH className="hidden sm:table-cell">Reference</TH><TH>Request</TH><TH className="hidden md:table-cell">Lodge</TH><TH className="hidden lg:table-cell">Owner</TH>
             <TH>Status</TH><TH className="hidden sm:table-cell">Due</TH>
           </THead>
           <TBody>
             {rows.map((c) => (
               <TR key={c.id}>
-                <TD className="whitespace-nowrap tabular-nums">{c.reference}</TD>
+                <TD className="hidden whitespace-nowrap tabular-nums sm:table-cell">{c.reference}</TD>
                 <TD>
                   <RowLink href={`/support/${c.id}`}>{c.title}</RowLink>
                   <div className="text-[13px] text-muted">
+                    <span className="tabular-nums sm:hidden">{c.reference} · </span>
                     {c.kind === "confidential" ? "Confidential concern" : c.category_label}
                     {c.priority === "high" && " · High priority"}
                   </div>

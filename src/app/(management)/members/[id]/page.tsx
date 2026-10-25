@@ -10,9 +10,11 @@ import { progressionSettings } from "@/server/members/directory";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
 import {
-  ClearCorrectionButton, CorrectionForm, DegreeForm, FIELDS, JourneyForm, PersonalMentorForm, PersonContactForm, PersonNoteForm,
+  ClearCorrectionButton, CorrectionForm, DegreeForm, JourneyForm, PersonalMentorForm, PersonContactForm, PersonNoteForm,
 } from "./member-forms";
+import { FIELDS } from "@/components/members/fields";
 import { ContactRequestDecision } from "@/components/members/contact-requests";
+import { WithAccounts } from "@/components/members/with-accounts";
 
 export const metadata: Metadata = { title: "Member" };
 
@@ -51,7 +53,7 @@ export default async function MemberPage({ params, searchParams }: { params: Pro
   const tabs = tabList.map((t) => ({ key: t, label: { overview: "Overview", contacts: "Contacts", notes: "Notes", support: "Support", learning: "Learning" }[t], href: `/members/${id}?tab=${t}` }));
 
   return (
-    <>
+    <WithAccounts>
       <PageHeader
         breadcrumbs={[{ href: "/members", label: "Members" }]}
         title={person.display_name}
@@ -72,7 +74,7 @@ export default async function MemberPage({ params, searchParams }: { params: Pro
       {tab === "notes" && <Notes />}
       {tab === "support" && <Support />}
       {tab === "learning" && canLearning && <Learning />}
-    </>
+    </WithAccounts>
   );
 
   async function ContactRequests() {

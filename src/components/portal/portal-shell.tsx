@@ -27,8 +27,8 @@ export function PortalShell({ session, lodges, children }: { session: SessionCon
           <Link href="/portal" className="flex items-center gap-3">
             <Image src="/brand/shield-256.png" alt="" width={30} height={35} priority />
             <span className="leading-tight">
-              <span className="block text-[16px] font-semibold text-navy-900">Lodge Mentor portal</span>
-              <span className="block text-[12px] text-muted">Prepare · Guide · Support · Enlighten</span>
+              <span className="block whitespace-nowrap text-[16px] font-semibold text-navy-900">Lodge Mentor portal</span>
+              <span className="hidden text-[12px] text-muted sm:block">Prepare · Guide · Support · Enlighten</span>
             </span>
           </Link>
           <div className="ml-auto flex items-center gap-1">

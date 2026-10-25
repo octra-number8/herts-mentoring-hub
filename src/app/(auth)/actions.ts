@@ -20,7 +20,7 @@ export async function signInWithPassword(_: ActionState, fd: FormData): Promise<
   await supabase.rpc("record_sign_in");
   const session = await getSession();
   if (!session) {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     return { error: "This account is not active. Please contact the Provincial Mentoring Team." };
   }
   const next = safeNext(fd.get("next"));

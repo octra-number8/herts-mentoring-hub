@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Badge, statusTone } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { DoneNotice } from "@/components/reports/done-notice";
 import { Alert, PageHeader } from "@/components/ui/layout";
 import { renderMarkdown } from "@/lib/markdown";
 import { formatDate, label } from "@/lib/utils";
@@ -12,9 +13,10 @@ import { ArticleAction } from "../knowledge-forms";
 
 export const metadata: Metadata = { title: "Knowledge base" };
 
-export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ArticlePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ done?: string }> }) {
   const session = await requirePermission("docs.read.internal", "docs.manage", "knowledge.manage");
   const { slug } = await params;
+  const { done } = await searchParams;
   const db = await supabaseServer();
   const { data: a } = await db.from("knowledge_articles").select("*").eq("slug", slug).maybeSingle();
   if (!a) notFound();
@@ -46,6 +48,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </>
         ) : undefined}
       />
+      <DoneNotice done={done} messages={{ saved: "Article saved.", saved_draft: "Saved. The article has returned to draft for approval.", review: "Submitted for review.", published: "Article published.", draft: "Returned to draft.", archived: "Article archived." }} />
       {blocked && editor && <div className="mb-4"><Alert tone="warning" title="Anonymisation not confirmed">This practical example cannot be published until the editor confirms it has been anonymised.</Alert></div>}
       <article className="prose-hub max-w-3xl rounded-lg border border-line bg-surface p-6" dangerouslySetInnerHTML={{ __html: renderMarkdown(a.body_markdown) }} />
       {a.tags.length > 0 && <p className="mt-3 flex flex-wrap gap-1.5">{a.tags.map((t) => <Badge key={t}>{t}</Badge>)}</p>}

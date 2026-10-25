@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 
 export function Table({ children, className, caption }: { children: React.ReactNode; className?: string; caption?: string }) {
   return (
-    <div className={cn("overflow-x-auto rounded-lg border border-line bg-surface", className)}>
+    // Focusable so keyboard users can scroll wide tables on small screens (WCAG 2.1.1).
+    <div className={cn("overflow-x-auto rounded-lg border border-line bg-surface", className)} tabIndex={0} role="region" aria-label={caption ?? "Table"}>
       <table className="w-full border-collapse text-left text-sm">
         {caption && <caption className="sr-only">{caption}</caption>}
         {children}

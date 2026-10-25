@@ -3,11 +3,10 @@
 import { z } from "zod";
 import { check, defineAction, UserError, zf } from "@/server/action";
 import { LEADERSHIP_ROLES } from "@/server/admin/accounts";
-import { supabaseService } from "@/server/supabase";
 
 export const setRolePermissions = defineAction(
   z.object({ role_id: zf.uuid(), permissions: zf.list(), confirm: zf.checkbox() }),
-  async (i, { db, session }) => {
+  async (i, { db }) => {
     if (!i.confirm) throw new UserError("Tick the confirmation to change what this role can do.");
     const role = check(await db.from("roles").select("id, key, name").eq("id", i.role_id).single());
     if (LEADERSHIP_ROLES.includes(role.key)) throw new UserError("Provincial leadership roles always hold every management permission and cannot be edited here.");
@@ -23,8 +22,6 @@ export const setRolePermissions = defineAction(
     if (!add.length && !remove.length) return { message: "No changes." };
     if (add.length) check(await db.from("role_permissions").insert(add.map((k) => ({ role_id: i.role_id, permission_key: k }))));
     if (remove.length) check(await db.from("role_permissions").delete().eq("role_id", i.role_id).in("permission_key", remove));
-    await supabaseService().rpc("admin_record_audit", { p_org: session.orgId, p_action: "role.permissions_changed", p_entity_type: "role", p_entity_id: i.role_id,
-      p_details: { role: role.key, added: add, removed: remove, by: session.accountId } });
     return { message: `${role.name}: ${add.length} added, ${remove.length} removed.`, revalidate: ["/admin/roles"] };
   },
   { permission: ["admin.roles"] },

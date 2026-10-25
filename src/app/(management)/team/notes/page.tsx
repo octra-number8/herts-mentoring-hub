@@ -7,6 +7,7 @@ import { ArchiveNoteButton, TeamNoteForm } from "@/components/team/team-forms";
 import { formatDateTime } from "@/lib/utils";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
+import { WithAccounts } from "@/components/members/with-accounts";
 
 export const metadata: Metadata = { title: "Team notes" };
 
@@ -30,7 +31,7 @@ export default async function TeamNotesPage({ searchParams }: { searchParams: Pr
   ];
 
   return (
-    <>
+    <WithAccounts>
       <PageHeader breadcrumbs={[{ href: "/team", label: "Team" }]} title="Team notes"
         description="General shared notes for the Provincial team. Notes about a Lodge or Brother belong on their page." />
       <div className="grid gap-6 xl:grid-cols-3">
@@ -65,6 +66,6 @@ export default async function TeamNotesPage({ searchParams }: { searchParams: Pr
         </div>
         <Panel title="Add a note"><TeamNoteForm visibilities={visibilities} /></Panel>
       </div>
-    </>
+    </WithAccounts>
   );
 }

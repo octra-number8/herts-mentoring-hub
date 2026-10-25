@@ -2,8 +2,10 @@
 
 import { ActionButton, DialogForm } from "@/components/ui/dialog-form";
 import { ActionForm, CheckboxField, FormActions, RadioGroup, SelectField, SubmitButton, TextAreaField, TextField } from "@/components/ui/form";
-import { AccountSelect, PersonPicker } from "@/components/ui/pickers";
+import { PersonPicker } from "@/components/ui/pickers";
+import { AssigneeSelect } from "@/components/members/assignee-select";
 import { todayIso } from "@/lib/utils";
+import { FIELDS } from "@/components/members/fields";
 import { addPersonNote, clearCorrection, logPersonContact, recordCorrection, recordDegree, updateJourney, updatePersonalMentor } from "../actions";
 
 const STAGES = [
@@ -19,10 +21,7 @@ const METHODS = [
   { value: "telephone", label: "Telephone" }, { value: "email", label: "Email" }, { value: "online_meeting", label: "Online meeting" },
   { value: "face_to_face", label: "Face to face" }, { value: "lodge_visit", label: "Lodge visit" }, { value: "other", label: "Other" },
 ];
-export const FIELDS = [
-  { value: "title", label: "Title" }, { value: "first_name", label: "First name" }, { value: "last_name", label: "Last name" },
-  { value: "email", label: "Email" }, { value: "phone", label: "Telephone" },
-];
+
 
 type Journey = {
   stage: string; royal_arch: string; journey_status: string; next_review_on: string | null; learning_opt_in: boolean;
@@ -88,7 +87,7 @@ export function PersonNoteForm({ personId, visibilities }: { personId: string; v
       <input type="hidden" name="person_id" value={personId} />
       <TextAreaField label="Note" name="body" rows={4} required />
       <SelectField label="Who can see this" name="visibility" options={visibilities} defaultValue={visibilities[0]?.value} />
-      <AccountSelect name="mentions[]" label="Mention (optional)" hint="They are notified; they only see the note if their role already allows." />
+      <AssigneeSelect name="mentions[]" label="Mention (optional)" noneLabel="Nobody" hint="They are notified; they only see the note if their role already allows." />
       <FormActions><SubmitButton>Add note</SubmitButton></FormActions>
     </ActionForm>
   );

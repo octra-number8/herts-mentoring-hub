@@ -59,7 +59,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ versio
       )}
       {(lesson.kind === "quiz" || lesson.is_assessment) && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-navy-900">Knowledge check</h2>
+          <h2 className="mb-3 text-lg font-semibold text-navy-900">Questions</h2>
           <QuizPlayer action={previewAssessment} hidden={{ lesson_id: lessonId }} questions={questions} passMark={lesson.pass_mark ?? version.pass_mark}
             maxAttempts={lesson.max_attempts} attemptsUsed={0} alreadyPassed={false} nextHref={next ? href(next.id) : undefined} courseHref={backHref} preview />
         </section>

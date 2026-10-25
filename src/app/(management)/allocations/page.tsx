@@ -67,7 +67,7 @@ export default async function AllocationsPage({ searchParams }: { searchParams: 
         <Panel title="Assistants and workloads" className="mb-6" padded={false}>
           {activeAppts.length ? (
             <Table className="rounded-none border-0" caption="Assistant workloads">
-              <THead><TH>Assistant</TH><TH className="hidden md:table-cell">Area</TH><TH align="right">Lodges</TH><TH align="right">Open tasks</TH><TH align="right" className="hidden sm:table-cell">Open requests</TH><TH align="right" className="hidden sm:table-cell">Overdue</TH><TH><span className="sr-only">Actions</span></TH></THead>
+              <THead><TH>Assistant</TH><TH className="hidden md:table-cell">Area</TH><TH align="right">Lodges</TH><TH align="right">Open tasks</TH><TH align="right" className="hidden sm:table-cell">Open requests</TH><TH align="right" className="hidden sm:table-cell">Overdue</TH></THead>
               <TBody>
                 {activeAppts.map((a) => {
                   const acc = accountOf.get(a.person_id);
@@ -76,18 +76,17 @@ export default async function AllocationsPage({ searchParams }: { searchParams: 
                   const covering = activeAllocs.filter((x) => x.person_id === a.person_id && x.kind === "cover").length;
                   return (
                     <TR key={a.id}>
-                      <TD className="font-medium">{name(a.persons)}<div className="text-[13px] font-normal text-muted md:hidden">{areas?.find((x) => x.id === a.area_id)?.name}</div></TD>
+                      <TD className="font-medium">{name(a.persons)}<div className="text-[13px] font-normal text-muted md:hidden">{areas?.find((x) => x.id === a.area_id)?.name}</div>
+                        <div className="mt-2 flex flex-wrap gap-1 font-normal">
+                          {acc && (w.tasks > 0 || w.requests > 0) && <TransferWorkForm action={transferWork} fromAccount={acc} name={name(a.persons)} accounts={recipients} trigger="Transfer work" />}
+                          <EndAppointmentForm action={endAppointment} personId={a.person_id} name={name(a.persons)} lodges={lodgesHeld + covering} openTasks={w.tasks} openCases={w.requests} />
+                        </div>
+                      </TD>
                       <TD className="hidden md:table-cell">{areas?.find((x) => x.id === a.area_id)?.name ?? "No area"}</TD>
                       <TD align="right">{lodgesHeld}{covering ? <span className="text-muted"> +{covering} cover</span> : null}</TD>
                       <TD align="right">{w.tasks}</TD>
                       <TD align="right" className="hidden sm:table-cell">{w.requests}</TD>
                       <TD align="right" className="hidden sm:table-cell">{w.overdue ? <span className="font-medium text-warning-800">{w.overdue}</span> : 0}</TD>
-                      <TD>
-                        <div className="flex flex-wrap justify-end gap-1">
-                          {acc && (w.tasks > 0 || w.requests > 0) && <TransferWorkForm action={transferWork} fromAccount={acc} name={name(a.persons)} accounts={recipients} trigger="Transfer work" />}
-                          <EndAppointmentForm action={endAppointment} personId={a.person_id} name={name(a.persons)} lodges={lodgesHeld + covering} openTasks={w.tasks} openCases={w.requests} />
-                        </div>
-                      </TD>
                     </TR>
                   );
                 })}

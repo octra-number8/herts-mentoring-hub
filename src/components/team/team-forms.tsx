@@ -2,7 +2,8 @@
 
 import { ActionButton, DialogForm } from "@/components/ui/dialog-form";
 import { ActionForm, CheckboxField, FormActions, SelectField, SubmitButton, TextAreaField, TextField } from "@/components/ui/form";
-import { AccountSelect, PersonPicker } from "@/components/ui/pickers";
+import { PersonPicker } from "@/components/ui/pickers";
+import { AssigneeSelect } from "@/components/members/assignee-select";
 import { MEETING_KIND_LABELS } from "./kinds";
 import {
   addAgendaItem, addAttendee, addDecision, addMeetingAction, addTeamNote, approveMinutes, archiveTeamNote, createMeeting, moveAgendaItem,
@@ -134,7 +135,7 @@ export function AddAttendeeForm({ meetingId }: { meetingId: string }) {
 
 export function AttendanceSelect({ meetingId, personId, current, name }: { meetingId: string; personId: string; current: string; name: string }) {
   return (
-    <ActionForm action={setAttendance} className="flex flex-wrap items-end gap-2 space-y-0">
+    <ActionForm action={setAttendance} className="flex flex-wrap items-center gap-2 space-y-0">
       <input type="hidden" name="meeting_id" value={meetingId} />
       <input type="hidden" name="person_id" value={personId} />
       <label className="sr-only" htmlFor={`att-${personId}`}>Attendance for {name}</label>
@@ -179,7 +180,7 @@ export function MeetingActionForm({ meetingId }: { meetingId: string }) {
     <DialogForm trigger="Add action" triggerSize="sm" triggerVariant="subtle" title="Add an action" description="Actions become tasks, linked to this meeting." action={addMeetingAction}>
       <input type="hidden" name="meeting_id" value={meetingId} />
       <TextField label="Action" name="title" required />
-      <AccountSelect name="owner_account_id" label="Owner" hint="Leave unassigned to take it yourself." />
+      <AssigneeSelect name="owner_account_id" label="Owner" hint="Leave unassigned to take it yourself." />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label="Due" name="due_on" type="date" />
         <SelectField label="Priority" name="priority" options={PRIORITIES} defaultValue="normal" />
@@ -193,7 +194,7 @@ export function TeamNoteForm({ visibilities }: { visibilities: Opt[] }) {
     <ActionForm action={addTeamNote} resetOnSuccess success="Note added.">
       <TextAreaField label="Note" name="body" rows={4} required />
       <SelectField label="Who can see this" name="visibility" options={visibilities} defaultValue={visibilities[0]?.value} />
-      <AccountSelect name="mentions[]" label="Mention (optional)" hint="They are notified; they only see the note if their role already allows." />
+      <AssigneeSelect name="mentions[]" label="Mention (optional)" noneLabel="Nobody" hint="They are notified; they only see the note if their role already allows." />
       <FormActions><SubmitButton>Add note</SubmitButton></FormActions>
     </ActionForm>
   );

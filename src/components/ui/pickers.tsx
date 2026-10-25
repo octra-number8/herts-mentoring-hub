@@ -17,17 +17,20 @@ export function PersonPicker({ name, label, hint, required, lodgeId, defaultValu
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const latest = useRef(0);
   const error = useFormState().fieldErrors?.[name];
 
   useEffect(() => {
     if (selected && query === selected.label) return;
     clearTimeout(timer.current);
     if (query.trim().length < 2 && !lodgeId) return;
+    const requestId = ++latest.current;
     timer.current = setTimeout(async () => {
       const params = new URLSearchParams({ q: query });
       if (lodgeId) params.set("lodge", lodgeId);
-      const res = await fetch(`${endpoint}?${params}`);
-      if (res.ok) { setOptions(await res.json()); setOpen(true); setActive(0); }
+      const res = await fetch(`${endpoint}?${params}`).catch(() => null);
+      // Ignore responses that arrive after a newer search has started.
+      if (res?.ok && requestId === latest.current) { setOptions(await res.json()); setOpen(true); setActive(0); }
     }, 200);
   }, [query, lodgeId, endpoint, selected]);
 

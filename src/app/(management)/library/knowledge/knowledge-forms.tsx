@@ -45,6 +45,6 @@ export function ArticleEditor({ article }: { article?: Article }) {
   );
 }
 
-export function ArticleAction({ id, slug, to, children, variant = "secondary", confirm }: { id: string; slug: string; to: string; children: React.ReactNode; variant?: "primary" | "secondary" | "teal" | "danger"; confirm?: string }) {
-  return <ActionButton action={articleTransition} fields={{ id, slug, to }} variant={variant} size="md" confirm={confirm}>{children}</ActionButton>;
+export function ArticleAction({ id, slug, to, children, variant = "secondary", confirm, back }: { id: string; slug: string; to: string; children: React.ReactNode; variant?: "primary" | "secondary" | "teal" | "danger"; confirm?: string; back?: "approvals" }) {
+  return <ActionButton action={articleTransition} fields={{ id, slug, to, ...(back ? { back } : {}) }} variant={variant} size="md" confirm={confirm}>{children}</ActionButton>;
 }

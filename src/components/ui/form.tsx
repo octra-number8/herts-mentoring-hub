@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useActionState, useContext, useEffect, useId, useRef } from "react";
+import { createContext, startTransition, useActionState, useContext, useEffect, useId, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/utils";
 import { initialActionState, type ActionState } from "@/lib/action-state";
 import { buttonClass } from "./button";
 
 const FormState = createContext<ActionState>(initialActionState);
+const FormPending = createContext(false);
 
 type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
 
@@ -15,7 +16,7 @@ export function ActionForm({ action, children, className, success, resetOnSucces
   action: Action; children: React.ReactNode; className?: string; success?: string; resetOnSuccess?: boolean;
   onSuccess?: (s: ActionState) => void; id?: string;
 }) {
-  const [state, formAction] = useActionState(action, initialActionState);
+  const [state, formAction, pending] = useActionState(action, initialActionState);
   const ref = useRef<HTMLFormElement>(null);
   const seen = useRef(0);
   useEffect(() => {
@@ -26,7 +27,17 @@ export function ActionForm({ action, children, className, success, resetOnSucces
     }
   }, [state, resetOnSuccess, onSuccess]);
   return (
-    <form ref={ref} action={formAction} className={cn("space-y-4", className)} id={id} noValidate>
+    // Submitted through a transition rather than the form's action prop: React 19 resets
+    // a form after its action runs, which would clear what was typed when the server
+    // returns a validation error. Successful submissions reset only if asked.
+    <form ref={ref} className={cn("space-y-4", className)} id={id} noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLElement | null;
+        const fd = new FormData(e.currentTarget, submitter);
+        startTransition(() => formAction(fd));
+      }}>
+      <FormPending.Provider value={pending}>
       <FormState.Provider value={state}>
         {state.error && (
           <div role="alert" className="rounded-md border border-danger-700/20 bg-danger-50 px-4 py-2.5 text-sm text-danger-700">{state.error}</div>
@@ -36,6 +47,7 @@ export function ActionForm({ action, children, className, success, resetOnSucces
         )}
         {children}
       </FormState.Provider>
+      </FormPending.Provider>
     </form>
   );
 }
@@ -134,7 +146,9 @@ export function RadioGroup({ legend, name, options, defaultValue, hint }: { lege
 export function SubmitButton({ children, variant = "primary", size = "md", className, pendingText, name, value }: {
   children: React.ReactNode; variant?: "primary" | "secondary" | "danger" | "teal" | "subtle"; size?: "sm" | "md"; className?: string; pendingText?: string; name?: string; value?: string;
 }) {
-  const { pending } = useFormStatus();
+  const status = useFormStatus();
+  const formPending = useContext(FormPending);
+  const pending = status.pending || formPending;
   return (
     <button type="submit" name={name} value={value} disabled={pending} aria-busy={pending} className={buttonClass(variant, size, className)}>
       {pending ? pendingText ?? "Saving…" : children}

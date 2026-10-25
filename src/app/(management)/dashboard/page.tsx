@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CustomiseDashboard } from "@/components/dashboard/customise";
 import { Chart } from "@/components/reports/chart";
+import { DoneNotice } from "@/components/reports/done-notice";
 import { Badge, mentoringStatusTone, statusTone } from "@/components/ui/badge";
 import { EmptyState, PageHeader, Panel, Stat } from "@/components/ui/layout";
 import { progressionPrompt, type ProgressionSettings } from "@/lib/progression";
@@ -346,8 +347,9 @@ const ORDER: Record<View, string[]> = {
   general: ["approvals", "tasks", "events", "learning", "acknowledge"],
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ done?: string }> }) {
   const session = await requirePermission("dashboard.view");
+  const { done } = await searchParams;
   const db = await supabaseServer();
   const view: View = can(session, "lodges.write.all") || can(session, "activity.read.all") ? "leadership"
     : session.allocatedLodgeIds.length > 0 ? "assistant" : "general";
@@ -371,6 +373,7 @@ export default async function DashboardPage() {
         description={view === "leadership" ? "Provincial overview. Figures follow what your role allows you to see." : view === "assistant" ? "Your Lodges, tasks and what is coming up." : "What is coming up and what needs your attention."}
         actions={<CustomiseDashboard customised={!!layout} panels={ordered.map((p) => ({ key: p.key, title: p.title, shown: !hidden.has(p.key) }))} />}
       />
+      <DoneNotice done={done} messages={{ reset: "Your dashboard is back to the standard layout." }} />
       {rendered.length === 0 ? (
         <EmptyState title="All panels are hidden">Use Customise to choose what to show.</EmptyState>
       ) : (

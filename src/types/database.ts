@@ -6815,6 +6815,14 @@ export type Database = {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: undefined
       }
+      management_accounts: {
+        Args: never
+        Returns: {
+          display_name: string
+          id: string
+          roles: string
+        }[]
+      }
       my_context: { Args: never; Returns: Json }
       my_portal_scope: { Args: never; Returns: Json }
       outbox_retry: { Args: { p_id: string }; Returns: undefined }

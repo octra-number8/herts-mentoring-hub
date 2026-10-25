@@ -2,7 +2,7 @@
 
 import { ActionButton, DialogForm } from "@/components/ui/dialog-form";
 import { ActionForm, FormActions, SelectField, SubmitButton, TextAreaField, TextField } from "@/components/ui/form";
-import { AccountSelect } from "@/components/ui/pickers";
+import { AssigneeSelect } from "@/components/members/assignee-select";
 import { addTaskComment, quickAddTask, reassignTask, setTaskStatus, updateTask } from "@/app/(management)/tasks/actions";
 
 const PRIORITIES = [{ value: "low", label: "Low" }, { value: "normal", label: "Normal" }, { value: "high", label: "High" }];
@@ -20,7 +20,7 @@ export function QuickAddTask({ lodges }: { lodges: { value: string; label: strin
       <details className="text-sm">
         <summary className="cursor-pointer text-navy-800">More options</summary>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <AccountSelect name="owner_account_id" label="Owner" hint="Leave unassigned to take it yourself." />
+          <AssigneeSelect name="owner_account_id" label="Owner" hint="Leave unassigned to take it yourself." />
           <SelectField label="Lodge" name="lodge_id" options={lodges} placeholder="No Lodge" />
           <TextAreaField label="Description" name="description" rows={2} fieldClassName="md:col-span-2" />
         </div>
@@ -58,7 +58,7 @@ export function ReassignForm({ task }: { task: Task }) {
   return (
     <DialogForm trigger="Reassign" triggerSize="sm" title="Reassign task" description="The new owner is notified." action={reassignTask} submitLabel="Reassign">
       <input type="hidden" name="task_id" value={task.id} />
-      <AccountSelect name="owner_account_id" label="New owner" defaultValue={task.owner_account_id} required />
+      <AssigneeSelect name="owner_account_id" label="New owner" defaultValue={task.owner_account_id} required />
       <TextField label="Note (optional)" name="note" />
     </DialogForm>
   );

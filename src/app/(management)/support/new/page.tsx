@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/layout";
 import { NewRequestForm } from "@/components/support/support-forms";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
+import { WithAccounts } from "@/components/members/with-accounts";
 
 export const metadata: Metadata = { title: "New support request" };
 
@@ -20,7 +21,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
   ]);
 
   return (
-    <>
+    <WithAccounts>
       <PageHeader breadcrumbs={[{ href: "/support", label: "Support" }]} title="New support request"
         description="Record a request for mentoring help. Requests for a Lodge are routed to its allocated Assistant." />
       {can(session, "cases.confidential.submit") && (
@@ -34,6 +35,6 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
         lodgeId={isUuid(sp.lodge) ? sp.lodge : undefined}
         member={member ? { id: member.id, label: member.display_name ?? "" } : null}
       />
-    </>
+    </WithAccounts>
   );
 }

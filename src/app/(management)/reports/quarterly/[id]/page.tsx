@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Chart } from "@/components/reports/chart";
+import { DoneNotice } from "@/components/reports/done-notice";
 import { Badge, statusTone } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { Alert, PageHeader, Panel } from "@/components/ui/layout";
@@ -13,9 +14,10 @@ import { NarrativeForm, RegenerateButton, TransitionButton } from "../quarterly-
 
 export const metadata: Metadata = { title: "Quarterly report" };
 
-export default async function QuarterlyReportPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function QuarterlyReportPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ done?: string }> }) {
   const session = await requirePermission("reports.quarterly");
   const { id } = await params;
+  const { done } = await searchParams;
   const db = await supabaseServer();
   const { data: report } = await db.from("quarterly_reports").select("*").eq("id", id).maybeSingle();
   if (!report) notFound();
@@ -48,6 +50,10 @@ export default async function QuarterlyReportPage({ params }: { params: Promise<
           </>
         }
       />
+      <DoneNotice done={done} messages={{
+        review: "Submitted for review by Provincial leadership.", draft: "Returned to draft.", approved: "Report approved. It can no longer be edited.",
+        published: "Report published.", refreshed: "Figures refreshed. Your narrative has been kept.",
+      }} />
       {report.status === "review" && !canApprove && <div className="mb-4"><Alert>This report is awaiting approval by Provincial leadership. You can still refine the narrative.</Alert></div>}
       {!editable && <div className="mb-4"><Alert tone="success">This report was approved{report.approved_at ? ` on ${formatDate(report.approved_at)}` : ""} and is fixed. It will not change after later reallocations or imports.</Alert></div>}
       <div className="mb-4"><Alert title="About these figures">Figures are a snapshot of the records when the report was generated. Membership figures depend on the imports received and may be partial. This environment holds synthetic data.</Alert></div>

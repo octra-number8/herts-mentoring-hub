@@ -9,6 +9,7 @@ import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
 import { linkedRecord } from "@/server/tasks/linked";
 import { OPEN_TASK } from "@/server/tasks/query";
+import { WithAccounts } from "@/components/members/with-accounts";
 
 export const metadata: Metadata = { title: "Task" };
 
@@ -61,7 +62,7 @@ export default async function TaskPage({ params }: { params: Promise<{ id: strin
   };
 
   return (
-    <>
+    <WithAccounts>
       <PageHeader
         breadcrumbs={[{ href: "/tasks", label: "Tasks" }]}
         title={t.title}
@@ -123,6 +124,6 @@ export default async function TaskPage({ params }: { params: Promise<{ id: strin
           </Panel>
         </div>
       </div>
-    </>
+    </WithAccounts>
   );
 }

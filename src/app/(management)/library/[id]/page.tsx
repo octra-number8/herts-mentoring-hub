@@ -7,6 +7,7 @@ import { TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { formatDate, formatDateTime, label, todayIso } from "@/lib/utils";
 import { CLASSIFICATIONS, classificationLabel, pendingAcknowledgements } from "@/server/library/documents";
 import { AcknowledgeButton } from "@/components/library/acknowledge-button";
+import { DoneNotice } from "@/components/reports/done-notice";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
 import {
@@ -18,9 +19,10 @@ export const metadata: Metadata = { title: "Document" };
 const name = (x: unknown) => (x as { persons?: { display_name: string } } | null)?.persons?.display_name ?? null;
 const sizeLabel = (b: number | null) => (b ? (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`) : "");
 
-export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DocumentPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ done?: string }> }) {
   const session = await requirePermission("docs.read.internal", "docs.manage", "knowledge.manage");
   const { id } = await params;
+  const { done } = await searchParams;
   const db = await supabaseServer();
   const { data: doc } = await db.from("documents")
     .select("*, category:document_categories(id, name), owner:persons!documents_owner_person_id_fkey(display_name)")
@@ -98,6 +100,11 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         }
       />
 
+      <DoneNotice done={done} messages={{
+        created: "Document created. Upload the first draft next.", review: "Submitted for review. Approvers have been notified.", draft: "Returned to draft with your note.",
+        approved: "Version approved. It can now be published.", published: "Published. Any previous issue has been superseded.", archived: "Version archived.",
+        doc_archived: "Document archived. It is hidden from readers but kept with its history.", restored: "Document restored to the library.",
+      }} />
       {doc.requires_ack && current && (
         <div className="mb-6">
           {needsAck ? (

@@ -9,11 +9,17 @@ export const lodgeId = (n: number): string => secrets.lodges.find((l: { number: 
 export async function signIn(page: Page, key: string) {
   const u = secrets.users[key];
   await page.goto("/login");
-  await page.locator("input[name=email]").fill(u.email);
-  await page.locator("input[name=password]").fill(u.password);
+  await page.waitForLoadState("load");
+  // Fields typed before React hydrates can be wiped: fill, confirm, then submit.
+  await expect(async () => {
+    await page.locator("input[name=email]").fill(u.email);
+    await page.locator("input[name=password]").fill(u.password);
+    await expect(page.locator("input[name=email]")).toHaveValue(u.email, { timeout: 1000 });
+    await expect(page.locator("input[name=password]")).toHaveValue(u.password, { timeout: 1000 });
+  }).toPass({ timeout: 30_000 });
   await page.getByRole("button", { name: "Sign in" }).click();
   if (u.totpSecret) {
-    await expect(page.getByRole("heading", { name: "Two-step verification" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Two-step verification" })).toBeVisible({ timeout: 60_000 });
     for (let attempt = 0; attempt < 2; attempt++) {
       await page.locator("input[name=code]").fill(generateSync({ secret: u.totpSecret }));
       await page.getByRole("button", { name: "Verify" }).click();

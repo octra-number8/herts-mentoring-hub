@@ -8,7 +8,7 @@ import { validateRow, validateRows } from "@/server/imports/validate";
 const FIX = "tests/fixtures/imports";
 const LODGES = new Map([[9001, "L1"], [9002, "L2"], [9003, "L3"], [9004, "L4"], [9005, "L5"]]);
 const recent = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-const scenarioCsv = () => readFileSync(`${FIX}/scenario-11.csv`, "utf8").replaceAll("{P}", "U").replaceAll("{S}", "").replaceAll("{RECENT}", recent);
+const scenarioCsv = () => readFileSync(`${FIX}/scenario-11.csv`, "utf8").replaceAll("{P}", "U").replaceAll("{S}", "").replaceAll("{L}", "9001").replaceAll("{RECENT}", recent);
 
 describe("parse", () => {
   it("parses CSV with a BOM, trims values and skips blank lines", () => {

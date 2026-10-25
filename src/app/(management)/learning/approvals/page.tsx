@@ -59,7 +59,7 @@ export default async function ApprovalsPage() {
       <PageHeader title="Academy" description="Course versions are approved by someone other than their author, then published." />
       <AcademyAdminTabs session={session} current="approvals" counts={{ approvals: review.length + approved.length }} />
       <div className="space-y-6">
-        <Panel title={`Awaiting review (${review.length})`} padded={!review.length}>
+        <Panel id="awaiting" title={`Awaiting review (${review.length})`} padded={!review.length}>
           {review.length === 0 ? <EmptyState title="Nothing awaiting review" /> : (
             <ul className="divide-y divide-line">
               {review.map((r) => (
@@ -73,7 +73,7 @@ export default async function ApprovalsPage() {
           )}
         </Panel>
 
-        <Panel title={`Approved, ready to publish (${approved.length})`} padded={!approved.length}>
+        <Panel id="approved" title={`Approved, ready to publish (${approved.length})`} padded={!approved.length}>
           {approved.length === 0 ? <EmptyState title="Nothing waiting to be published" /> : (
             <ul className="divide-y divide-line">
               {approved.map((r) => (
@@ -87,7 +87,7 @@ export default async function ApprovalsPage() {
           )}
         </Panel>
 
-        <Panel title="Published courses" description="Archiving withdraws a course from new enrolments. Existing learners and certificates are unaffected." padded={!published.length}>
+        <Panel id="published" title="Published courses" description="Archiving withdraws a course from new enrolments. Existing learners and certificates are unaffected." padded={!published.length}>
           {published.length === 0 ? <EmptyState title="No published courses" /> : (
             <ul className="divide-y divide-line">
               {published.map((r) => (

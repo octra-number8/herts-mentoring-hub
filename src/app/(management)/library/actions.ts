@@ -26,7 +26,7 @@ export const createDocument = defineAction(
       classification: i.classification, owner_person_id: i.owner_person_id ?? session.personId, requires_ack: i.requires_ack,
       renew_ack_on_revision: i.renew_ack_on_revision, review_on: i.review_on,
     }).select("id").single());
-    return { message: "Document created. Upload the first draft next.", redirect: `/library/${doc.id}`, revalidate: ["/library"] };
+    return { message: "Document created. Upload the first draft next.", redirect: `/library/${doc.id}?done=created`, revalidate: ["/library"] };
   },
   { permission: ["docs.manage"] },
 );
@@ -57,7 +57,7 @@ export const archiveDocument = defineAction(
   async (i, { db }) => {
     const res = await db.from("documents").update({ archived_at: i.restore ? null : new Date().toISOString() }).eq("id", i.document_id).select("id");
     if (!check(res).length) throw new UserError("You cannot change this document.");
-    return { message: i.restore ? "Document restored to the library." : "Document archived. It is hidden from readers but kept with its history.", revalidate: [`/library/${i.document_id}`, "/library"] };
+    return { redirect: `/library/${i.document_id}?done=${i.restore ? "restored" : "doc_archived"}`, revalidate: [`/library/${i.document_id}`, "/library"] };
   },
   { permission: ["docs.manage"] },
 );
@@ -108,7 +108,7 @@ export const uploadVersion = defineAction(
 );
 
 export const transitionVersion = defineAction(
-  z.object({ document_id: zf.uuid(), version_id: zf.uuid(), to: z.enum(["draft", "review", "approved", "published", "archived"]), note: zf.optionalText(1000) }),
+  z.object({ document_id: zf.uuid(), version_id: zf.uuid(), to: z.enum(["draft", "review", "approved", "published", "archived"]), note: zf.optionalText(1000), back: z.enum(["approvals"]).optional() }),
   async (i, { db }) => {
     check(await db.rpc("document_transition_version", { p_version: i.version_id, p_to: i.to, p_note: i.note ?? undefined }));
     kickJobs();
@@ -116,7 +116,7 @@ export const transitionVersion = defineAction(
       review: "Submitted for review. Approvers have been notified.", draft: "Returned to draft with your note.", approved: "Version approved. It can now be published.",
       published: "Published. The previous issue has been superseded.", archived: "Version archived.",
     }[i.to];
-    return { message: msg, revalidate: [`/library/${i.document_id}`, "/library", "/library/approvals"] };
+    return { message: msg, redirect: i.back === "approvals" ? `/library/approvals?done=${i.to}` : `/library/${i.document_id}?done=${i.to}`, revalidate: [`/library/${i.document_id}`, "/library", "/library/approvals"] };
   },
 );
 
@@ -124,6 +124,7 @@ export const acknowledgeDocument = defineAction(
   z.object({ document_id: zf.uuid(), version_id: zf.uuid() }),
   async (i, { db }) => {
     check(await db.rpc("document_acknowledge", { p_version: i.version_id }));
+    // The acknowledge button is replaced by a confirmation on the page once recorded.
     return { message: "Thank you. Your acknowledgement of this issue has been recorded.", revalidate: [`/library/${i.document_id}`, "/library", "/academy/resources"] };
   },
 );
@@ -154,7 +155,7 @@ export const createArticle = defineAction(
       org_id: session.orgId, slug, title: i.title, kind: i.kind, audience: i.audience, body_markdown: i.body_markdown, tags: tagList(i.tags),
       anonymisation_confirmed: i.kind === "example" ? i.anonymisation_confirmed : false, status: "draft",
     }));
-    return { message: "Draft saved.", redirect: `/library/knowledge/${slug}`, revalidate: ["/library/knowledge"] };
+    return { message: "Draft saved.", redirect: `/library/knowledge/${slug}?done=saved`, revalidate: ["/library/knowledge"] };
   },
   { permission: ["knowledge.manage"] },
 );
@@ -172,13 +173,13 @@ export const updateArticle = defineAction(
       anonymisation_confirmed: i.kind === "example" ? i.anonymisation_confirmed : false,
     }).eq("id", i.id).select("id");
     if (!check(res).length) throw new UserError("You cannot edit this article.");
-    return { message: status !== a.status ? "Saved. The article has returned to draft for approval." : "Article saved.", redirect: `/library/knowledge/${a.slug}`, revalidate: ["/library/knowledge", `/library/knowledge/${a.slug}`] };
+    return { message: status !== a.status ? "Saved. The article has returned to draft for approval." : "Article saved.", redirect: `/library/knowledge/${a.slug}?done=${status !== a.status ? "saved_draft" : "saved"}`, revalidate: ["/library/knowledge", `/library/knowledge/${a.slug}`] };
   },
   { permission: ["knowledge.manage"] },
 );
 
 export const articleTransition = defineAction(
-  z.object({ id: zf.uuid(), slug: z.string(), to: z.enum(["draft", "review", "published", "archived"]) }),
+  z.object({ id: zf.uuid(), slug: z.string(), to: z.enum(["draft", "review", "published", "archived"]), back: z.enum(["approvals"]).optional() }),
   async (i, { db }) => {
     if (i.to === "published") {
       check(await db.rpc("knowledge_publish", { p_article: i.id }));
@@ -187,7 +188,7 @@ export const articleTransition = defineAction(
       if (!check(res).length) throw new UserError("You cannot change this article.");
     }
     const msg = { draft: "Returned to draft.", review: "Submitted for review.", published: "Article published.", archived: "Article archived." }[i.to];
-    return { message: msg, revalidate: ["/library/knowledge", `/library/knowledge/${i.slug}`, "/library/approvals"] };
+    return { message: msg, redirect: i.back === "approvals" ? `/library/approvals?done=article_${i.to}` : `/library/knowledge/${i.slug}?done=${i.to}`, revalidate: ["/library/knowledge", `/library/knowledge/${i.slug}`, "/library/approvals"] };
   },
   { permission: ["knowledge.manage", "docs.approve"] },
 );

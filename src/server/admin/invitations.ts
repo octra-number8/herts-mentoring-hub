@@ -30,6 +30,7 @@ async function sendInvitationEmail(svc: DB, opts: { orgId: string; invitationId:
       `Dear ${person?.first_name ?? "Brother"},`,
       `You have been invited to ${place}.${opts.message ? `\n\n${opts.message}` : ""}`,
       `[Accept your invitation and choose a password](${link})`,
+      `If the button does not work, copy this address into your browser: ${link}`,
       "The link works once and expires in 7 days. If you were not expecting this, you can ignore this email.",
     ].join("\n\n"),
   });

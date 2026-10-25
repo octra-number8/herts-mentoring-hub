@@ -12,7 +12,7 @@ const P = `X${RUN}-`;            // unique synthetic membership-number prefix
 const S = `Qz${letters()}`;      // unique surname suffix (letters only)
 const recentIso = new Date(Date.now() - 20 * 86400000).toISOString().slice(0, 10);
 const recent = recentIso.split("-").reverse().join("/");
-const csv = readFileSync("tests/fixtures/imports/scenario-11.csv", "utf8").replaceAll("{P}", P).replaceAll("{S}", S).replaceAll("{RECENT}", recent);
+const csv = readFileSync("tests/fixtures/imports/scenario-11.csv", "utf8").replaceAll("{P}", P).replaceAll("{S}", S).replaceAll("{L}", "9001").replaceAll("{RECENT}", recent);
 
 async function page(cookie: string, path: string) {
   return fetch(APP + path, { headers: { cookie }, redirect: "manual" });

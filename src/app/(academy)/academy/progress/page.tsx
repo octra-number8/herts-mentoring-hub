@@ -32,6 +32,7 @@ export default async function ProgressPage() {
 
   const groups = (["in_progress", "enrolled", "completed", "withdrawn"] as const).map((s) => ({ status: s, items: enrolments.filter((e) => e.status === s) }));
   const courseOf = new Map(enrolments.map((e) => [e.id, e.course.title]));
+  const lessonHref = (enrolmentId: string, lessonId: string) => `/academy/learn/${enrolmentId}/${lessonId}`;
   type Attempt = NonNullable<typeof attempts>[number];
   const byLesson = new Map<string, Attempt[]>();
   for (const a of attempts ?? []) {
@@ -88,7 +89,7 @@ export default async function ProgressPage() {
                   const passed = list.some((a) => a.passed);
                   return (
                     <TR key={k}>
-                      <TD className="font-medium">{lesson.title}<div className="text-[13px] text-muted md:hidden">{courseOf.get(list[0]!.enrolment_id)}</div></TD>
+                      <TD><Link className="font-medium text-navy-800 hover:underline" href={lessonHref(list[0]!.enrolment_id, list[0]!.lesson_id)}>{lesson.title}</Link><div className="text-[13px] text-muted md:hidden">{courseOf.get(list[0]!.enrolment_id)}</div></TD>
                       <TD className="hidden md:table-cell">{courseOf.get(list[0]!.enrolment_id)}</TD>
                       <TD align="right">{list.length}{lesson.max_attempts ? ` of ${lesson.max_attempts}` : ""}</TD>
                       <TD align="right">{best}%</TD>

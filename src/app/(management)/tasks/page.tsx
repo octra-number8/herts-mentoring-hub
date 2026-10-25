@@ -10,6 +10,7 @@ import { formatDate, label } from "@/lib/utils";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
 import { linkedHref, OPEN_TASK, queryTasks, TASK_STATUSES, type TaskFilters } from "@/server/tasks/query";
+import { WithAccounts } from "@/components/members/with-accounts";
 
 export const metadata: Metadata = { title: "Tasks" };
 
@@ -34,7 +35,7 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
   const filtered = !!(sp.status || sp.priority || sp.from || sp.to || sp.lodge || sp.q);
 
   return (
-    <>
+    <WithAccounts>
       <PageHeader
         title="Tasks"
         description="Everything that needs doing, in one place. Actions from support requests and meetings appear here too."
@@ -91,6 +92,6 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
         </Table>
       )}
       {rows.length >= 500 && <p className="mt-3 text-sm text-muted">Showing the first 500 tasks. Use the filters to narrow the list.</p>}
-    </>
+    </WithAccounts>
   );
 }

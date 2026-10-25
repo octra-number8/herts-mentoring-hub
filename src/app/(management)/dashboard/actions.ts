@@ -19,6 +19,7 @@ export const resetDashboardLayout = defineAction(
   z.object({}),
   async (_i, { db, session }) => {
     check(await db.from("saved_views").delete().eq("page", "dashboard").eq("account_id", session.accountId));
-    return { message: "Dashboard reset to the standard layout.", revalidate: ["/dashboard"] };
+    // The reset button disappears with the custom layout, so confirm on the page itself.
+    return { redirect: "/dashboard?done=reset", revalidate: ["/dashboard"] };
   },
 );

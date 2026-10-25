@@ -76,7 +76,7 @@ export const regenerateQuarterly = defineAction(
   z.object({ id: zf.uuid(), year: zf.int(), quarter: zf.int() }),
   async (i, { db }) => {
     check(await db.rpc("report_generate_quarterly", { p_year: i.year, p_quarter: i.quarter }));
-    return { message: "Figures refreshed. Your narrative has been kept.", revalidate: [`/reports/quarterly/${i.id}`] };
+    return { message: "Figures refreshed. Your narrative has been kept.", redirect: `/reports/quarterly/${i.id}?done=refreshed`, revalidate: [`/reports/quarterly/${i.id}`] };
   },
   { permission: ["reports.quarterly"] },
 );
@@ -87,7 +87,8 @@ export const transitionQuarterly = defineAction(
     check(await db.rpc("report_quarterly_transition", { p_report: i.id, p_to: i.to }));
     kickJobs();
     const msg = { draft: "Returned to draft.", review: "Submitted for review by Provincial leadership.", approved: "Report approved. It can no longer be edited.", published: "Report published." }[i.to];
-    return { message: msg, revalidate: [`/reports/quarterly/${i.id}`, "/reports/quarterly"] };
+    // The button that was pressed disappears with the old status, so the page shows the outcome.
+    return { message: msg, redirect: `/reports/quarterly/${i.id}?done=${i.to}`, revalidate: [`/reports/quarterly/${i.id}`, "/reports/quarterly"] };
   },
   { permission: ["reports.quarterly"] },
 );

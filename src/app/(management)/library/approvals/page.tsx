@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LibraryTabs } from "@/components/library/library-tabs";
+import { DoneNotice } from "@/components/reports/done-notice";
 import { Badge, statusTone } from "@/components/ui/badge";
 import { EmptyState, PageHeader, Panel } from "@/components/ui/layout";
 import { RowLink, TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
@@ -13,8 +14,9 @@ import { ApproveVersionForm, ReturnVersionForm, VersionAction } from "../library
 
 export const metadata: Metadata = { title: "Library approvals" };
 
-export default async function ApprovalsPage() {
+export default async function ApprovalsPage({ searchParams }: { searchParams: Promise<{ done?: string }> }) {
   const session = await requirePermission("docs.approve");
+  const { done } = await searchParams;
   const db = await supabaseServer();
   const [{ data: versions }, { data: articles }] = await Promise.all([
     db.from("document_versions").select("id, version_label, status, submitted_at, approved_at, change_summary, storage_path, file_name, document:documents!document_versions_document_id_fkey(id, reference, title, classification)")
@@ -26,6 +28,7 @@ export default async function ApprovalsPage() {
     <>
       <PageHeader title="Library" description="Documents and knowledge articles awaiting a decision." />
       <LibraryTabs session={session} current="approvals" pending={(versions?.length ?? 0)} />
+      <DoneNotice done={done} messages={{ approved: "Version approved. It can now be published.", published: "Published. The previous issue has been superseded.", draft: "Returned to draft with your note.", article_published: "Article published.", article_draft: "Article returned to draft." }} />
       <div className="space-y-6">
         <Panel title="Document versions" padded={false}>
           {versions?.length ? (
@@ -42,8 +45,8 @@ export default async function ApprovalsPage() {
                       <TD><Badge tone={statusTone(v.status)}>{label(v.status)}</Badge><div className="text-[13px] text-muted">{formatDate(v.status === "review" ? v.submitted_at : v.approved_at)}</div></TD>
                       <TD>
                         <div className="flex flex-wrap gap-2">
-                          {v.status === "review" && <><ApproveVersionForm documentId={d.id} versionId={v.id} /><ReturnVersionForm documentId={d.id} versionId={v.id} /></>}
-                          {v.status === "approved" && <VersionAction documentId={d.id} versionId={v.id} to="published" variant="teal">Publish</VersionAction>}
+                          {v.status === "review" && <><ApproveVersionForm documentId={d.id} versionId={v.id} back="approvals" /><ReturnVersionForm documentId={d.id} versionId={v.id} back="approvals" /></>}
+                          {v.status === "approved" && <VersionAction documentId={d.id} versionId={v.id} to="published" variant="teal" back="approvals">Publish</VersionAction>}
                         </div>
                       </TD>
                     </TR>
@@ -65,8 +68,8 @@ export default async function ApprovalsPage() {
                     <TD className="hidden md:table-cell">{classificationLabel(a.audience)}</TD>
                     <TD>
                       <div className="flex flex-wrap gap-2">
-                        {(a.kind !== "example" || a.anonymisation_confirmed) && <ArticleAction id={a.id} slug={a.slug} to="published" variant="teal">Publish</ArticleAction>}
-                        <ArticleAction id={a.id} slug={a.slug} to="draft">Return to draft</ArticleAction>
+                        {(a.kind !== "example" || a.anonymisation_confirmed) && <ArticleAction id={a.id} slug={a.slug} to="published" variant="teal" back="approvals">Publish</ArticleAction>}
+                        <ArticleAction id={a.id} slug={a.slug} to="draft" back="approvals">Return to draft</ArticleAction>
                       </div>
                     </TD>
                   </TR>

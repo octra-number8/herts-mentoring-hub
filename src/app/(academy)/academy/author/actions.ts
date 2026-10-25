@@ -51,17 +51,17 @@ export const updateCourse = defineAction(
 
 /** Edits refuse unless the version is a draft (RLS enforces the same). */
 async function requireDraft(db: DB, versionId: string) {
-  const { data } = await db.from("course_versions").select("status").eq("id", versionId).maybeSingle();
+  const data = check(await db.from("course_versions").select("status").eq("id", versionId).maybeSingle());
   if (!data) throw new UserError("Version not found.");
   if (data.status !== "draft") throw new UserError("Only draft versions can be edited. Start a new version to make changes.");
 }
 async function versionOfModule(db: DB, moduleId: string) {
-  const { data } = await db.from("course_modules").select("version_id").eq("id", moduleId).maybeSingle();
+  const data = check(await db.from("course_modules").select("version_id").eq("id", moduleId).maybeSingle());
   if (!data) throw new UserError("Module not found.");
   return data.version_id;
 }
 async function lessonContext(db: DB, lessonId: string) {
-  const { data } = await db.from("lessons").select("id, module_id, kind, course_modules(version_id)").eq("id", lessonId).maybeSingle();
+  const data = check(await db.from("lessons").select("id, module_id, kind, course_modules(version_id)").eq("id", lessonId).maybeSingle());
   if (!data) throw new UserError("Lesson not found.");
   return { ...data, versionId: (data.course_modules as unknown as { version_id: string }).version_id };
 }

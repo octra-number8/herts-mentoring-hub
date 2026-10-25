@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/button";
 import { DialogForm } from "@/components/ui/dialog-form";
 import { ActionForm, CheckboxField, FormActions, RadioGroup, SelectField, SubmitButton, TextAreaField, TextField } from "@/components/ui/form";
-import { AccountSelect, PersonPicker } from "@/components/ui/pickers";
+import { PersonPicker } from "@/components/ui/pickers";
+import { AssigneeSelect } from "@/components/members/assignee-select";
 import {
   addCaseAction, addCaseComment, addRestrictedNote, closeCase, createRequest, escalateCase, grantCaseAccess, reopenCase,
   submitConfidential, triageCase, updateCase,
@@ -31,13 +33,15 @@ export function NewRequestForm({ categories, lodges, lodgeId, member }: { catego
           { value: "hub", label: "Recorded in the Hub" }, { value: "email", label: "Email" }, { value: "telephone", label: "Telephone" }, { value: "meeting", label: "At a meeting" }]} />
         <TextField label="Due" name="due_on" type="date" hint="Optional. Defaults from the category." />
       </div>
-      <AccountSelect name="owner_account_id" label="Owner" hint="Leave unassigned to route to the Lodge's allocated Assistant." />
+      <AssigneeSelect name="owner_account_id" label="Owner" hint="Leave unassigned to route to the Lodge's allocated Assistant." />
       <FormActions><SubmitButton>Create request</SubmitButton></FormActions>
     </ActionForm>
   );
 }
 
 export function ConfidentialForm({ lodges }: { lodges: Opt[] }) {
+  // Checked in the browser before submitting, so a missed acknowledgement never costs what was typed.
+  const [ack, setAck] = useState(false);
   return (
     <ActionForm action={submitConfidential} className="max-w-2xl">
       <TextField label="Summary" name="title" required maxLength={200} hint="A short description. Avoid names here if you can." />
@@ -45,9 +49,17 @@ export function ConfidentialForm({ lodges }: { lodges: Opt[] }) {
       <SelectField label="Lodge (optional)" name="lodge_id" options={lodges} placeholder="Not about a particular Lodge"
         hint="Recorded for leadership only. It never appears on the Lodge's pages." />
       <PersonPicker name="member_person_id" label="Brother concerned (optional)" />
-      <CheckboxField name="acknowledge" label="I have read the guidance above"
-        hint="Welfare, safeguarding and disciplinary matters are referred through the Province's existing procedures." />
-      <FormActions><SubmitButton>Submit confidentially</SubmitButton></FormActions>
+      <div className="flex items-start gap-2.5">
+        <input id="cc-ack" type="checkbox" name="acknowledge" checked={ack} onChange={(e) => setAck(e.target.checked)} aria-describedby="cc-ack-hint" className="mt-1 h-4 w-4 rounded border-line accent-navy-800" />
+        <label htmlFor="cc-ack" className="text-sm">
+          <span className="font-medium text-ink">I have read the guidance above</span>
+          <span id="cc-ack-hint" className="block text-[13px] text-muted">Welfare, safeguarding and disciplinary matters are referred through the Province&apos;s existing procedures.</span>
+        </label>
+      </div>
+      <FormActions>
+        <button type="submit" disabled={!ack} className={buttonClass("primary", "md")}>Submit confidentially</button>
+        {!ack && <span className="text-[13px] text-muted">Tick the box above to submit.</span>}
+      </FormActions>
     </ActionForm>
   );
 }
@@ -66,7 +78,7 @@ export function UpdateCaseForm({ c, categories }: { c: CaseLite; categories: Opt
         <TextField label="Due" name="due_on" type="date" defaultValue={c.due_on ?? ""} />
         {c.kind === "request" && <SelectField label="Category" name="category_key" options={categories} defaultValue={c.category_key} />}
       </div>
-      <AccountSelect name="owner_account_id" label="Owner" defaultValue={c.owner_account_id} hint="Reassigning notifies the new owner." />
+      <AssigneeSelect name="owner_account_id" label="Owner" defaultValue={c.owner_account_id} noneLabel="Keep the current owner" hint="Reassigning notifies the new owner." />
       <PersonPicker name="member_person_id" label="Brother concerned" hint="Leave blank to keep the current record." />
     </DialogForm>
   );
@@ -77,7 +89,7 @@ export function CommentForm({ caseId, canShare }: { caseId: string; canShare: bo
     <ActionForm action={addCaseComment} resetOnSuccess>
       <input type="hidden" name="case_id" value={caseId} />
       <TextAreaField label="Add an update" name="body" rows={3} required />
-      {canShare && <CheckboxField name="visible_to_requester" label="Visible to the person who raised this" />}
+      {canShare && <CheckboxField name="visible_to_requester" label="Visible to the person who raised this" hint="They see it when they open the request in the Hub." />}
       <FormActions><SubmitButton>Add update</SubmitButton></FormActions>
     </ActionForm>
   );
@@ -88,7 +100,7 @@ export function ActionTaskForm({ caseId }: { caseId: string }) {
     <DialogForm trigger="Add action" triggerSize="sm" triggerVariant="subtle" title="Add an action" description="Actions appear in the task list, linked to this request." action={addCaseAction}>
       <input type="hidden" name="case_id" value={caseId} />
       <TextField label="Action" name="title" required />
-      <AccountSelect name="owner_account_id" label="Owner" hint="Leave unassigned to take it yourself." />
+      <AssigneeSelect name="owner_account_id" label="Owner" hint="Leave unassigned to take it yourself." />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label="Due" name="due_on" type="date" />
         <SelectField label="Priority" name="priority" options={PRIORITIES} defaultValue="normal" />
@@ -102,7 +114,7 @@ export function EscalateForm({ caseId, confidential }: { caseId: string; confide
     <DialogForm trigger="Escalate" triggerSize="sm" title="Escalate" action={escalateCase} submitLabel="Escalate"
       description={confidential ? "Confidential concerns can only be escalated to designated Provincial leadership." : "The person you choose is notified and can see this request."}>
       <input type="hidden" name="case_id" value={caseId} />
-      <AccountSelect name="to_account_id" label="Escalate to" required allowNone />
+      <AssigneeSelect name="to_account_id" label="Escalate to" required allowNone />
       <TextAreaField label="Reason" name="note" rows={3} required />
     </DialogForm>
   );
@@ -147,7 +159,7 @@ export function TriageForm({ caseId }: { caseId: string }) {
           </label>
         ))}
       </fieldset>
-      {action === "assign" && <AccountSelect name="owner_account_id" label="Assign to" required />}
+      {action === "assign" && <AssigneeSelect name="owner_account_id" label="Assign to" required />}
       {action === "refer" && <TextField label="Referred to" name="referred_to" required placeholder="e.g. Provincial Grand Almoner (welfare procedure)" />}
       <TextAreaField label={action === "close" ? "Reason" : "Note (optional)"} name="note" rows={3} required={action === "close"} />
       <FormActions><SubmitButton>Record decision</SubmitButton></FormActions>
@@ -160,7 +172,7 @@ export function GrantAccessForm({ caseId }: { caseId: string }) {
     <DialogForm trigger="Grant access" triggerSize="sm" triggerVariant="subtle" title="Grant access to this record"
       description="Access is to this record only, and is recorded with your reason." action={grantCaseAccess}>
       <input type="hidden" name="case_id" value={caseId} />
-      <AccountSelect name="account_id" label="Person" required />
+      <AssigneeSelect name="account_id" label="Person" required />
       <TextAreaField label="Reason" name="reason" rows={2} required />
     </DialogForm>
   );

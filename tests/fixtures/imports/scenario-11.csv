@@ -1,8 +1,8 @@
 Membership No,Title,Forename,Surname,Email,Lodge No,Primary,Status,Date Initiated,Date Passed,Date Raised
-{P}01,Bro,Oswin,Tregarthen{S},,9001,Yes,Active,{RECENT},,
-{P}02,W Bro,Lucan,Fenwhistle{S},lucan.fenwhistle@example.test,9001,Yes,Active,14/03/2015,12/09/2015,10/03/2016
-{P}03,Bro,Piers,Haldane{S},piers.new@example.test,9001,Yes,Active,02/02/2019,,
-{P}04,Bro,Tobias,Wrenfield{S},tobias.wrenfield@example.test,9001,Yes,Active,2020-05-06,,
-{P}04,Bro,Tobias,Wrenfield{S},tobias.wrenfield@example.test,9001,Yes,Active,2020-05-06,,
-{P}05,Bro,Corwin,Blakeney{S},,9001,Yes,Active,11/11/2018,,
+{P}01,Bro,Oswin,Tregarthen{S},oswin.{P}@example.test,{L},Yes,Active,{RECENT},,
+{P}02,W Bro,Lucan,Fenwhistle{S},lucan.fenwhistle@example.test,{L},Yes,Active,14/03/2015,12/09/2015,10/03/2016
+{P}03,Bro,Piers,Haldane{S},piers.new@example.test,{L},Yes,Active,02/02/2019,,
+{P}04,Bro,Tobias,Wrenfield{S},tobias.wrenfield@example.test,{L},Yes,Active,2020-05-06,,
+{P}04,Bro,Tobias,Wrenfield{S},tobias.wrenfield@example.test,{L},Yes,Active,2020-05-06,,
+{P}05,Bro,Corwin,Blakeney{S},,{L},Yes,Active,11/11/2018,,
 {P}07,Bro,Ansel,,ansel@example,99999,Maybe,Active,31/02/2020,,

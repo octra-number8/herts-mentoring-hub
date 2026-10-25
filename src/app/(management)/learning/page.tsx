@@ -52,7 +52,7 @@ export default async function AcademyAdminOverview() {
     if (e.status === "completed") r.completed++;
     if (e.status === "in_progress") r.inProgress++;
     return m.set(e.course_id, r);
-  }, new Map<string, { enrolled: number; completed: number; inProgress: number }>())].sort((a, b) => b[1].enrolled - a[1].enrolled);
+  }, new Map<string, { enrolled: number; completed: number; inProgress: number }>())].filter(([, r]) => r.enrolled > 0 || r.completed > 0).sort((a, b) => b[1].enrolled - a[1].enrolled);
 
   return (
     <>

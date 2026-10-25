@@ -62,7 +62,7 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
           </div>
           {outline.length === 0 && <EmptyState title="No modules yet">{editable ? "Add a module, then add lessons to it." : "This version has no content."}</EmptyState>}
           {outline.map((m, mi) => (
-            <Panel key={m.id} title={`${mi + 1}. ${m.title}`} description={m.summary || undefined} padded={false}
+            <Panel key={m.id} id={`module-${m.id}`} title={`${mi + 1}. ${m.title}`} description={m.summary || undefined} padded={false}
               actions={editable ? <>
                 <ActionButton action={moveModule} fields={{ module_id: m.id, dir: "up" }} variant="subtle">Up<span className="sr-only"> module {m.title}</span></ActionButton>
                 <ActionButton action={moveModule} fields={{ module_id: m.id, dir: "down" }} variant="subtle">Down<span className="sr-only"> module {m.title}</span></ActionButton>

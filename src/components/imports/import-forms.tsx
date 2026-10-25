@@ -24,7 +24,7 @@ export function UploadForm({ action, templates }: { action: Action; templates: {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <SelectField label="Source" name="source" options={SOURCES} defaultValue="hermes" required />
-        <SelectField label="Report format" name="template_id" placeholder="Identify automatically" options={templates.map((t) => ({ value: t.id, label: t.name }))}
+        <SelectField label="Report format" name="template_id" placeholder="Identify automatically" options={[{ value: "manual", label: "Map the columns myself" }, ...templates.map((t) => ({ value: t.id, label: t.name }))]}
           hint="Leave blank to match a saved template by its columns, or map the columns yourself." />
       </div>
       <RadioGroup legend="What does this report cover?" name="report_scope" defaultValue="partial" options={[

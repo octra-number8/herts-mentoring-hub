@@ -78,7 +78,7 @@ export default async function LessonPage({ params }: { params: Promise<{ enrolme
 
       {(lesson.kind === "quiz" || lesson.is_assessment) && (
         <section aria-labelledby="check">
-          <h2 id="check" className="mb-3 text-lg font-semibold text-navy-900">Knowledge check</h2>
+          <h2 id="check" className="mb-3 text-lg font-semibold text-navy-900">Questions</h2>
           {withdrawn ? <p className="text-sm text-muted">Enrol again to take this knowledge check.</p> : (
             <QuizPlayer action={submitAssessment} hidden={{ enrolment_id: enrolmentId, lesson_id: lessonId, slug: course.slug }}
               questions={questions} passMark={lesson.pass_mark ?? version.pass_mark} maxAttempts={lesson.max_attempts}

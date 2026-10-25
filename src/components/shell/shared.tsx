@@ -11,7 +11,7 @@ export function EnvironmentBanner({ session }: { session: SessionContext }) {
 export function UserMenu({ session }: { session: SessionContext }) {
   return (
     <details className="relative">
-      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1.5 hover:bg-navy-50 [&::-webkit-details-marker]:hidden">
+      <summary aria-label={`Account menu for ${session.displayName}`} className="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1.5 hover:bg-navy-50 [&::-webkit-details-marker]:hidden">
         <Avatar name={session.displayName} size={30} />
         <span className="hidden text-sm font-medium text-ink md:inline">{session.displayName}</span>
       </summary>

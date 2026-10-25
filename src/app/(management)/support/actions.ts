@@ -67,7 +67,10 @@ export const updateCase = defineAction(
   }),
   async (i, { db }) => {
     const { case_id, member_person_id, category_key, ...rest } = i;
-    const patch: { status: string; priority: string; due_on: string | null; owner_account_id: string | null; member_person_id?: string; category_key?: string } = { ...rest };
+    const { owner_account_id, ...base } = rest;
+    const patch: { status: string; priority: string; due_on: string | null; owner_account_id?: string; member_person_id?: string; category_key?: string } = { ...base };
+    // A blank owner keeps the current one: this form reassigns, it never unassigns.
+    if (owner_account_id) patch.owner_account_id = owner_account_id;
     if (member_person_id) patch.member_person_id = member_person_id;
     if (category_key && category_key !== "confidential") patch.category_key = category_key;
     const res = await db.from("cases").update(patch).eq("id", case_id).select("id");
@@ -147,8 +150,8 @@ export const triageCase = defineAction(
   async (i, { db }) => {
     check(await db.rpc("case_triage", { p_case: i.case_id, p_action: i.action, p_owner: i.owner_account_id as string, p_referred_to: i.referred_to as string, p_note: i.note as string }));
     kickJobs();
-    const msg = { assign: "Assigned. Access has been granted and recorded.", refer: "Referral recorded.", close: "Concern closed." }[i.action];
-    return { message: msg, revalidate: paths(i.case_id) };
+    // The triage panel disappears once decided, so confirm on the page itself.
+    return { redirect: `/support/${i.case_id}?triaged=${i.action}`, revalidate: paths(i.case_id) };
   },
   { permission: ["cases.confidential.triage"] },
 );

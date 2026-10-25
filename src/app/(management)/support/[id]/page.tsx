@@ -10,14 +10,18 @@ import { formatDate, formatDateTime, label } from "@/lib/utils";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
 import { OPEN_EXCLUDES } from "@/server/support/query";
+import { WithAccounts } from "@/components/members/with-accounts";
 
 export const metadata: Metadata = { title: "Support request" };
 
+const TRIAGED: Record<string, string> = {
+  assign: "Assigned. Access has been granted and recorded.", refer: "Referral recorded. The concern is closed here.", close: "Concern closed.",
+};
 const FLOW = ["new", "assigned", "in_progress", "awaiting_response", "escalated", "resolved", "closed"];
 type Named = { display_name: string } | null;
 const accName = (a: unknown) => (a as { persons: Named } | null)?.persons?.display_name ?? null;
 
-export default async function CasePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string; submitted?: string }> }) {
+export default async function CasePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string; submitted?: string; triaged?: string }> }) {
   const session = await requirePermission("cases.read.all", "cases.read.allocated", "cases.confidential.triage", "cases.confidential.submit");
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -79,7 +83,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
   };
 
   return (
-    <>
+    <WithAccounts>
       <PageHeader
         breadcrumbs={[{ href: "/support", label: "Support" }]}
         title={c.title}
@@ -103,6 +107,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
       />
 
       {sp.created && <div className="mb-4"><Alert tone="success">Request {c.reference} created{c.owner_account_id ? ` and routed to ${accName(c.owner)}` : ""}.</Alert></div>}
+      {sp.triaged && TRIAGED[sp.triaged] && <div className="mb-4"><Alert tone="success">{TRIAGED[sp.triaged]}</Alert></div>}
       {sp.submitted && <div className="mb-4"><Alert tone="success" title={`Thank you. Your concern ${c.reference} has been received.`}>Designated leadership have been told a concern has arrived. They will decide the next step.</Alert></div>}
 
       {!canReadFull ? (
@@ -130,7 +135,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
                   meta: e.kind !== "comment" && accName(e.author) ? `by ${accName(e.author)}` : undefined,
                 }))} />
               ) : <EmptyState title="No updates yet" />}
-              {canManage && <div className="mt-5 border-t border-line pt-4"><CommentForm caseId={id} canShare={!!c.requester_account_id && c.requester_account_id !== session.accountId} /></div>}
+              {canManage && <div className="mt-5 border-t border-line pt-4"><CommentForm caseId={id} canShare={!!(c.requester_account_id || c.requester_person_id)} /></div>}
             </Panel>
 
             {(can(session, "notes.restricted") || (restricted ?? []).length > 0) && (
@@ -204,7 +209,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
           </div>
         </div>
       )}
-    </>
+    </WithAccounts>
   );
 
   function RequesterView() {

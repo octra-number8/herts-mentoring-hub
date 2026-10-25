@@ -16,8 +16,11 @@ export function renderMarkdown(md: string | null | undefined): string {
   return sanitizeHtml(marked.parse(md, { async: false }) as string, ALLOWED);
 }
 
+/** Plain-text version of Markdown. Links keep their address, e.g. "Accept (https://...)". */
 export function stripMarkdown(md: string): string {
-  return sanitizeHtml(marked.parse(md, { async: false }) as string, { allowedTags: [], allowedAttributes: {} }).replace(/\n{3,}/g, "\n\n").trim();
+  const withUrls = md.replace(/\[([^\]]+)\]\((\S+?)\)/g, (_, text: string, url: string) => (text === url ? url : `${text} (${url})`));
+  return sanitizeHtml(marked.parse(withUrls, { async: false }) as string, { allowedTags: [], allowedAttributes: {} })
+    .replace(/&amp;/g, "&").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);

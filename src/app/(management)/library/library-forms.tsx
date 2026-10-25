@@ -97,27 +97,29 @@ export function UploadVersionForm({ documentId, versionId, trigger = "Upload new
   );
 }
 
-export function VersionAction({ documentId, versionId, to, children, variant = "secondary", confirm }: { documentId: string; versionId: string; to: string; children: React.ReactNode; variant?: "primary" | "secondary" | "teal" | "danger"; confirm?: string }) {
-  return <ActionButton action={transitionVersion} fields={{ document_id: documentId, version_id: versionId, to }} variant={variant} confirm={confirm}>{children}</ActionButton>;
+export function VersionAction({ documentId, versionId, to, children, variant = "secondary", confirm, back }: { documentId: string; versionId: string; to: string; children: React.ReactNode; variant?: "primary" | "secondary" | "teal" | "danger"; confirm?: string; back?: "approvals" }) {
+  return <ActionButton action={transitionVersion} fields={{ document_id: documentId, version_id: versionId, to, ...(back ? { back } : {}) }} variant={variant} confirm={confirm}>{children}</ActionButton>;
 }
 
-export function ReturnVersionForm({ documentId, versionId }: { documentId: string; versionId: string }) {
+export function ReturnVersionForm({ documentId, versionId, back }: { documentId: string; versionId: string; back?: "approvals" }) {
   return (
     <DialogForm trigger="Return" triggerSize="sm" title="Return to draft" description="Explain what needs to change. The note is kept in the approval history." action={transitionVersion} submitLabel="Return to draft">
       <input type="hidden" name="document_id" value={documentId} />
       <input type="hidden" name="version_id" value={versionId} />
       <input type="hidden" name="to" value="draft" />
+      {back && <input type="hidden" name="back" value={back} />}
       <TextAreaField label="Note for the author" name="note" rows={3} required />
     </DialogForm>
   );
 }
 
-export function ApproveVersionForm({ documentId, versionId }: { documentId: string; versionId: string }) {
+export function ApproveVersionForm({ documentId, versionId, back }: { documentId: string; versionId: string; back?: "approvals" }) {
   return (
     <DialogForm trigger="Approve" triggerSize="sm" triggerVariant="primary" title="Approve this version" action={transitionVersion} submitLabel="Approve">
       <input type="hidden" name="document_id" value={documentId} />
       <input type="hidden" name="version_id" value={versionId} />
       <input type="hidden" name="to" value="approved" />
+      {back && <input type="hidden" name="back" value={back} />}
       <TextAreaField label="Approval note" name="note" rows={2} hint="Optional. Kept in the approval history." />
     </DialogForm>
   );
