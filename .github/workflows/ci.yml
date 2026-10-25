@@ -12,7 +12,7 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -28,19 +28,28 @@ jobs:
         run: npx supabase start -x studio,imgproxy,vector,logflare,edge-runtime,realtime,postgres-meta,supavisor
       - name: Environment
         run: ./scripts/ci-env.sh
-      - name: Database, RLS and workflow tests
-        run: npm test
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
       - name: Build
         run: npm run build
+      - name: Start the app (some database tests exercise pages over HTTP)
+        run: |
+          nohup npm run start > app.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3100/login && exit 0; sleep 2; done; exit 1
+      - name: Database, RLS, permission and workflow tests
+        run: npm test
       - name: Fresh synthetic data for browser tests
         run: npm run db:reset
-      - name: End-to-end and accessibility tests
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end, acceptance and accessibility tests
         run: npm run test:e2e
+      - name: App log on failure
+        if: failure()
+        run: tail -200 app.log || true
       - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: playwright-report
-          path: playwright-report
+          path: |
+            playwright-report
+            test-results
           retention-days: 7

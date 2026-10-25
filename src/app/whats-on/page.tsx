@@ -8,6 +8,9 @@ import { formatDay, formatTime } from "@/lib/utils";
 import { safeBookingUrl } from "@/server/integrations/octra";
 import { supabaseService } from "@/server/supabase";
 
+// Always current: never prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "What's on", description: "Public mentoring events in Hertfordshire" };
 
 /**

@@ -78,7 +78,18 @@ const TEST_USERS: TestUser[] = [
   { key: "learner2", email: "learner2@hub.test", first: "Nathan", last: "Okafor", title: "Bro", roles: ["learner"], mfa: false },
 ];
 
+/** Wait until PostgREST's schema cache includes our functions (it reloads after a reset). */
+async function apiReady() {
+  for (let i = 0; i < 60; i++) {
+    const { error } = await db.rpc("admin_bootstrap_org", { p_org: "00000000-0000-0000-0000-000000000000" });
+    if (!error || !["PGRST002", "PGRST202"].includes(error.code ?? "")) return;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  throw new Error("Supabase API schema cache did not load");
+}
+
 async function main() {
+  await apiReady();
   console.log("Seeding synthetic data…");
 
   // Organisation -------------------------------------------------------------
