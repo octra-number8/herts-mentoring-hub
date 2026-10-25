@@ -30,7 +30,12 @@ async function check(page: Page, path: string, name: string, heading: string | R
 test("leadership pages at phone width", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   const { data: doc } = await svc().from("documents").select("id").eq("org_id", secrets.orgId).eq("reference", "B1").single();
-  const { data: qr } = await svc().from("quarterly_reports").select("id").eq("org_id", secrets.orgId).order("generated_at", { ascending: false }).limit(1).single();
+  // Use the latest quarterly report, creating a draft on fresh data.
+  let { data: qr } = await svc().from("quarterly_reports").select("id").eq("org_id", secrets.orgId).order("generated_at", { ascending: false }).limit(1).maybeSingle();
+  if (!qr) {
+    const { data: id } = await svc().rpc("admin_generate_quarterly", { p_org: secrets.orgId, p_year: 2025, p_quarter: 4 });
+    qr = { id: id as string };
+  }
   await signIn(page, "pgm");
   await check(page, "/dashboard", "dashboard-pgm", /^Good day/);
   await check(page, "/library", "library", "Library");

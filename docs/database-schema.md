@@ -37,6 +37,7 @@ erDiagram
   enrolments ||--o{ certificates : "enrolment_id"
   enrolments ||--o{ lesson_progress : "enrolment_id"
   enrolments ||--o{ reflections : "enrolment_id"
+  events ||--o{ event_checkin_secrets : "event_id"
   events ||--o{ event_invites : "event_id"
   events ||--o{ event_joining_details : "event_id"
   events ||--o{ event_resources : "event_id"
@@ -88,6 +89,7 @@ erDiagram
   persons ||--o{ cases : "requester_person_id"
   persons ||--o{ certificates : "person_id"
   persons ||--o{ comm_preferences : "person_id"
+  persons ||--o{ contact_change_requests : "person_id"
   persons ||--o{ contacts : "person_id"
   persons ||--o{ degree_events : "person_id"
   persons ||--o{ development_plans : "person_id"
@@ -238,7 +240,7 @@ RLS: enabled · policies: 2
 
 ### `calendar_feed_tokens`
 
-RLS: enabled · policies: 2
+RLS: enabled · policies: 3
 
 | Column | Type | Null | Default |
 |---|---|---|---|
@@ -328,7 +330,7 @@ RLS: enabled · policies: 3
 |---|---|---|---|
 | id | uuid | NO | gen_random_uuid() |
 | org_id | uuid | NO |  |
-| reference | text | NO |  |
+| reference | text | NO | ''::text |
 | kind | text | NO | 'request'::text |
 | category_key | text | NO |  |
 | title | text | NO |  |
@@ -391,6 +393,22 @@ RLS: enabled · policies: 2
 | email_status_at | timestamp with time zone | YES |  |
 | unsubscribe_token | text | NO | encode(gen_random_bytes(18), 'hex'::text) |
 | updated_at | timestamp with time zone | NO | now() |
+
+### `contact_change_requests`
+
+RLS: enabled · policies: 2
+
+| Column | Type | Null | Default |
+|---|---|---|---|
+| id | uuid | NO | gen_random_uuid() |
+| org_id | uuid | NO |  |
+| person_id | uuid | NO |  |
+| details | text | NO |  |
+| status | text | NO | 'open'::text |
+| created_at | timestamp with time zone | NO | now() |
+| handled_by | uuid | YES |  |
+| handled_at | timestamp with time zone | YES |  |
+| handled_note | text | YES |  |
 
 ### `contacts`
 
@@ -496,7 +514,7 @@ RLS: enabled · policies: 2
 
 ### `development_plan_items`
 
-RLS: enabled · policies: 1
+RLS: enabled · policies: 3
 
 | Column | Type | Null | Default |
 |---|---|---|---|
@@ -513,7 +531,7 @@ RLS: enabled · policies: 1
 
 ### `development_plans`
 
-RLS: enabled · policies: 1
+RLS: enabled · policies: 3
 
 | Column | Type | Null | Default |
 |---|---|---|---|
@@ -692,6 +710,16 @@ RLS: enabled · policies: 3
 | completed_at | timestamp with time zone | YES |  |
 | last_activity_at | timestamp with time zone | YES |  |
 
+### `event_checkin_secrets`
+
+RLS: enabled · policies: 1
+
+| Column | Type | Null | Default |
+|---|---|---|---|
+| event_id | uuid | NO |  |
+| secret | text | NO | encode(gen_random_bytes(16), 'hex'::text) |
+| rotated_at | timestamp with time zone | NO | now() |
+
 ### `event_invites`
 
 RLS: enabled · policies: 2
@@ -769,7 +797,6 @@ RLS: enabled · policies: 2
 | attendance_completes_course | boolean | NO | false |
 | certificate_on_attendance | boolean | NO | false |
 | feedback_enabled | boolean | NO | true |
-| checkin_secret | text | NO | encode(gen_random_bytes(16), 'hex'::text) |
 | checkin_open | boolean | NO | false |
 | cancelled_reason | text | YES |  |
 | created_by | uuid | YES | app.current_account_id() |
@@ -992,7 +1019,7 @@ RLS: enabled · policies: 3
 
 ### `learner_profiles`
 
-RLS: enabled · policies: 1
+RLS: enabled · policies: 3
 
 | Column | Type | Null | Default |
 |---|---|---|---|
@@ -1106,7 +1133,7 @@ RLS: enabled · policies: 2
 
 ### `lodge_mentoring_profiles`
 
-RLS: enabled · policies: 2
+RLS: enabled · policies: 4
 
 | Column | Type | Null | Default |
 |---|---|---|---|
@@ -1195,6 +1222,7 @@ RLS: enabled · policies: 2
 | presenter_person_id | uuid | YES |  |
 | notes | text | YES |  |
 | document_id | uuid | YES |  |
+| document_url | text | YES |  |
 
 ### `meeting_attendees`
 
@@ -1422,7 +1450,7 @@ RLS: enabled · policies: 1
 
 ### `persons`
 
-RLS: enabled · policies: 3
+RLS: enabled · policies: 4
 
 | Column | Type | Null | Default |
 |---|---|---|---|
@@ -1843,11 +1871,18 @@ RLS: enabled · policies: 2
 - `academy_complete_lesson(p_enrolment uuid, p_lesson uuid, p_reflection text)`
 - `academy_enrol(p_course uuid)`
 - `academy_issue_recognition(p_person uuid, p_title text, p_completed_on date, p_reason text, p_course uuid)`
+- `academy_learner_context(p_person uuid)`
+- `academy_learning_filters()`
+- `academy_learning_records(p_lodge uuid, p_area uuid, p_role text, p_course uuid, p_status text, p_from date, p_to date, p_q text, p_person uuid, p_limit integer)`
 - `academy_new_version(p_course uuid)`
 - `academy_submit_assessment(p_enrolment uuid, p_lesson uuid, p_answers jsonb)`
 - `academy_transition_version(p_version uuid, p_to text, p_note text)`
 - `academy_withdraw(p_enrolment uuid)`
+- `account_request_contact_change(p_details text)`
 - `account_set_status(p_account uuid, p_status text, p_reason text)`
+- `admin_create_invitation(p_person uuid, p_title text, p_first text, p_last text, p_email text, p_roles text[], p_token_hash text, p_message text)`
+- `admin_resend_invitation(p_invitation uuid, p_token_hash text)`
+- `admin_revoke_invitation(p_invitation uuid)`
 - `allocate_lodge(p_lodge uuid, p_person uuid, p_kind text, p_starts date, p_ends date, p_reason text, p_transfer_open_work boolean)`
 - `campaign_cancel(p_campaign uuid)`
 - `campaign_decide(p_campaign uuid, p_approve boolean, p_note text)`
@@ -1871,11 +1906,20 @@ RLS: enabled · policies: 2
 - `event_set_attendance(p_registration uuid, p_status text, p_reason text)`
 - `event_set_checkin(p_event uuid, p_open boolean, p_rotate boolean)`
 - `feature_set_activation(p_feature text, p_scope text, p_target uuid, p_actions jsonb, p_active boolean, p_reason text)`
+- `import_cancel(p_batch uuid)`
 - `import_commit(p_batch uuid)`
+- `import_stage(p_batch uuid, p_rows jsonb, p_stats jsonb, p_template uuid, p_scope uuid[])`
+- `integration_failure_resolve(p_failure uuid, p_retry boolean)`
 - `knowledge_publish(p_article uuid)`
+- `learning_person_roles()`
 - `log_export(p_dataset text, p_format text, p_rows integer, p_filters jsonb)`
 - `log_sensitive_access(p_entity_type text, p_entity_id uuid)`
+- `management_accounts()`
 - `my_context()`
+- `my_portal_scope()`
+- `outbox_retry(p_id uuid)`
+- `person_clear_correction(p_person uuid, p_field text)`
+- `person_record_correction(p_person uuid, p_field text, p_value text, p_reason text)`
 - `record_lodge_appointment(p_lodge uuid, p_office text, p_person uuid, p_starts date, p_confirmed boolean)`
 - `record_sign_in()`
 - `report_generate_quarterly(p_year integer, p_quarter integer)`
@@ -1884,3 +1928,5 @@ RLS: enabled · policies: 2
 - `retention_run(p_policy uuid, p_dry_run boolean)`
 - `search_all(p_query text, p_limit integer)`
 - `transfer_open_work(p_from_account uuid, p_to_account uuid, p_reason text)`
+- `workflow_run_decide(p_run uuid, p_approve boolean)`
+- `workflow_run_retry(p_run uuid)`

@@ -69,7 +69,18 @@ async function restore(dir: string) {
   console.log(`Restored ${n} objects (checksums verified). Files not in the manifest: ${walk(dir).filter((f) => !f.endsWith("manifest.json")).length - n}`);
 }
 
+/** Restore drill only: delete every file listed in a backup manifest. Refuses hosted projects. */
+async function wipe(dir: string) {
+  if (!/127\.0\.0\.1|localhost/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")) throw new Error("wipe is for the local restore drill only");
+  const manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8")) as { objects: { bucket: string; path: string }[] };
+  for (const bucket of new Set(manifest.objects.map((o) => o.bucket))) {
+    const { error } = await db.storage.from(bucket).remove(manifest.objects.filter((o) => o.bucket === bucket).map((o) => o.path));
+    if (error) throw error;
+  }
+  console.log(`Deleted ${manifest.objects.length} objects`);
+}
+
 const [mode, dir] = process.argv.slice(2);
-if (!dir || !["backup", "restore"].includes(mode)) { console.error("Usage: storage-backup.ts backup|restore <dir>"); process.exit(2); }
-(mode === "backup" ? backup(dir) : restore(dir)).catch((e) => { console.error(e); process.exit(1); });
+if (!dir || !["backup", "restore", "wipe"].includes(mode)) { console.error("Usage: storage-backup.ts backup|restore|wipe <dir>"); process.exit(2); }
+(mode === "backup" ? backup(dir) : mode === "restore" ? restore(dir) : wipe(dir)).catch((e) => { console.error(e); process.exit(1); });
 void relative;
