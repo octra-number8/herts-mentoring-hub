@@ -42,6 +42,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: End-to-end, acceptance and accessibility tests
         run: npm run test:e2e
+      - name: Browser test summary
+        if: failure()
+        run: node scripts/e2e-summary.mjs >> "$GITHUB_STEP_SUMMARY"
       - name: App log on failure
         if: failure()
         run: tail -200 app.log || true

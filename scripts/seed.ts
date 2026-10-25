@@ -13,7 +13,7 @@ import { writeFileSync } from "node:fs";
 import { config } from "dotenv";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
-config({ path: ".env.local" });
+config({ path: process.env.ENV_FILE ?? ".env.local" });
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -338,7 +338,7 @@ async function main() {
   // Templates, workflows, badges --------------------------------------------------------------
   await seedTemplatesAndWorkflows(O);
 
-  writeFileSync(".seed-secrets.json", JSON.stringify({ orgId: O, lodges: lodges.map((l) => ({ id: l.id, number: l.number, name: l.name })), users: secrets }, null, 2));
+  writeFileSync(process.env.SEED_SECRETS_FILE ?? ".seed-secrets.json", JSON.stringify({ orgId: O, lodges: lodges.map((l) => ({ id: l.id, number: l.number, name: l.name })), users: secrets }, null, 2));
   console.log(`Seeded: ${lodges.length} lodges, ${members.length} members, ${TEST_USERS.length} test accounts.`);
 }
 
@@ -433,8 +433,13 @@ async function seedLibrary(O: string, accounts: Record<string, string>, persons:
     page.drawText("Synthetic placeholder for development and testing.", { x: 50, y: 750, size: 11, font });
     const bytes = await pdf.save();
     const path = `${O}/${doc.id}/v1/${d.reference}.pdf`;
-    const { error } = await db.storage.from("documents").upload(path, bytes, { contentType: "application/pdf", upsert: true });
-    if (error) throw error;
+    // Storage can report healthy a moment before its own migrations finish after a reset.
+    for (let attempt = 1; ; attempt++) {
+      const { error } = await db.storage.from("documents").upload(path, bytes, { contentType: "application/pdf", upsert: true });
+      if (!error) break;
+      if (attempt >= 15) throw error;
+      await new Promise((r) => setTimeout(r, 2000));
+    }
     const v = await must(db.from("document_versions").insert({ org_id: O, document_id: doc.id, version_no: 1, version_label: "Issue 1, October 2026", status: "published",
       storage_path: path, file_name: `${d.reference}.pdf`, mime_type: "application/pdf", size_bytes: bytes.length, created_by: accounts.pgm,
       approved_by: accounts.pgm, approved_at: new Date().toISOString(), published_by: accounts.pgm, published_at: new Date().toISOString() }).select("id").single(), "doc version") as { id: string };

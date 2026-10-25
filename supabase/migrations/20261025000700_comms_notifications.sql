@@ -9,7 +9,7 @@ create table public.comm_preferences (
   unsubscribed_all_at timestamptz,               -- does not stop essential operational email
   email_status text not null default 'ok' check (email_status in ('ok','bounced','complained','invalid')),
   email_status_at timestamptz,
-  unsubscribe_token text not null unique default encode(gen_random_bytes(18), 'hex'),
+  unsubscribe_token text not null unique default encode(extensions.gen_random_bytes(18), 'hex'),
   updated_at timestamptz not null default now()
 );
 

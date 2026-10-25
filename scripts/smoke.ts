@@ -6,16 +6,17 @@
  *
  * Append =<status> to expect a status other than 200. Reports the status, the
  * page <title> and any server error text. Exits 1 if an expectation fails.
- * Needs the dev server on APP_URL (default http://localhost:3100).
+ * Needs the dev server on APP_URL (default http://localhost:3100). For staging set
+ * APP_URL, ENV_FILE and SEED_SECRETS_FILE (.staging-secrets.json).
  */
 import { createServerClient } from "@supabase/ssr";
 import { generateSync } from "otplib";
 import { readFileSync } from "node:fs";
 import { config } from "dotenv";
 
-config({ path: ".env.local", quiet: true });
+config({ path: process.env.ENV_FILE ?? ".env.local", quiet: true });
 
-const secrets = JSON.parse(readFileSync(".seed-secrets.json", "utf8"));
+const secrets = JSON.parse(readFileSync(process.env.SEED_SECRETS_FILE ?? ".seed-secrets.json", "utf8"));
 const APP = (process.env.APP_URL ?? "http://localhost:3100").replace(/\/$/, "");
 
 export async function cookieFor(key: string): Promise<string> {

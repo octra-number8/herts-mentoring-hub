@@ -61,4 +61,4 @@ Note on cost: a Supabase project on a paid organisation is billed per project (c
 - **(build) Load check on staging** with realistic volumes (Hertfordshire's full Lodge and membership numbers). Local testing used 40 Lodges and about 800 synthetic members.
 - **(build) Cross-browser checks.** Automated tests run in Chromium; check Safari (iPhone) and Firefox manually or add Playwright projects.
 - **Manual screen-reader review** of the main journeys (automated axe checks pass).
-- **Hosted staging environment.** Supabase staging project ($10/month, approved) and Vercel preview deployments are ready to create once Vercel access is available; see `docs/deployment.md`.
+- **Hosted staging is live** at https://app.hertsmentors.com with synthetic data (see `docs/deployment.md`). Before real data: a separate production Supabase project (Pro plan, backups, PITR), a Resend domain, and moving staging to its own subdomain (e.g. staging.hertsmentors.com) so `app.` can serve production.

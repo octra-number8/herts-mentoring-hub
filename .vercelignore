@@ -1,0 +1,11 @@
+# Never upload local secrets, data or test artefacts with a CLI deployment.
+.env*
+!.env.example
+.seed-secrets.json
+.staging-secrets.json
+backups/
+test-results/
+playwright-report/
+supabase/.temp/
+node_modules/
+.next/

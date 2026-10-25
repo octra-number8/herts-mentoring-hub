@@ -412,3 +412,12 @@ enabled = true
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# Hosted staging (synthetic data only). Applied with:
+#   npx supabase config push --project-ref pgthnipdqbuoqptxkovs
+[remotes.staging]
+project_id = "pgthnipdqbuoqptxkovs"
+
+[remotes.staging.auth]
+site_url = "https://app.hertsmentors.com"
+additional_redirect_urls = ["https://app.hertsmentors.com/**", "https://*-octra-number8s-projects.vercel.app/**"]

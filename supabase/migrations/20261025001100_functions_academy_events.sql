@@ -516,7 +516,7 @@ declare v_secret text;
 begin
   perform app.require(app.can_manage_event(p_event), 'Not permitted');
   update public.events set checkin_open = p_open,
-         checkin_secret = case when p_rotate then encode(gen_random_bytes(16), 'hex') else checkin_secret end
+         checkin_secret = case when p_rotate then encode(extensions.gen_random_bytes(16), 'hex') else checkin_secret end
    where id = p_event returning checkin_secret into v_secret;
   return v_secret;
 end $$;

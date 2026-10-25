@@ -10,7 +10,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]] : "list",
+  reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }], ["json", { outputFile: "playwright-report/results.json" }]] : "list",
   timeout: 60_000,
   use: { baseURL: process.env.APP_URL ?? "http://localhost:3100", trace: "retain-on-failure", screenshot: "only-on-failure" },
   projects: [

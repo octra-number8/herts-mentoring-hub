@@ -11,6 +11,21 @@ Production runs on **Vercel** (Next.js) and **Supabase** (Postgres, Auth, Storag
 | Preview | Vercel preview deployment per pull request | Supabase staging project | Synthetic only | Resend test mode or SMTP capture |
 | Production (https://app.hertsmentors.com) | Vercel production (main branch) | Supabase production project | Live only after data authorisation | Resend, verified domain |
 
+## Staging (live)
+
+| Item | Value |
+|---|---|
+| URL | https://app.hertsmentors.com (Vercel project `herts-mentoring-hub`, team FIRE) |
+| Database | Supabase project `herts-mentoring-hub-staging` (`pgthnipdqbuoqptxkovs`, London) |
+| Data | Synthetic only, seeded with `ALLOW_REMOTE_SEED=yes-synthetic-only` |
+| Email | `EMAIL_DRIVER=memory`: nothing is sent until a Resend domain is verified |
+| Background jobs | Vercel Cron, every 10 minutes |
+| Test accounts | `.staging-secrets.json` in the repo folder (git-ignored): emails, password, TOTP secrets |
+
+Deploy a new version: `npx vercel deploy --prod` after CI passes. Apply new migrations first: `npx supabase db push --linked`. Auth settings for staging live in `supabase/config.toml` under `[remotes.staging]` and are applied with `npx supabase config push --project-ref pgthnipdqbuoqptxkovs`.
+
+Note: linking the CLI to the hosted project records its service versions locally (`supabase/.temp`); restart the local stack (`npx supabase stop && npx supabase start`) afterwards so local Storage matches.
+
 ## Release flow
 
 1. Work on a branch; open a pull request.
