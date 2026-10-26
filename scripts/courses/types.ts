@@ -19,6 +19,8 @@ export type LessonDef = {
   prompt?: string;
   scenario?: Scenario;
   isAssessment?: boolean;
+  /** False for optional activities that do not count towards completion. Defaults to true. */
+  required?: boolean;
   passMark?: number;
   maxAttempts?: number;
   questions?: QuestionDef[];
@@ -38,5 +40,9 @@ export type CourseDef = {
   passMark: number;
   /** The library document(s) the course is adapted from. */
   source: string;
+  /** Library issue label from a course data file, e.g. "Issue 3". Marks the version so a re-run skips it. */
+  issue?: string;
+  /** Bullet points recorded in the version's change summary. */
+  changeSummary?: string[];
   modules: { title: string; summary: string; lessons: LessonDef[] }[];
 };

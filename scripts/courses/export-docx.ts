@@ -156,10 +156,10 @@ function question(q: QuestionDef, n: number): (Paragraph | Table)[] {
   return out;
 }
 
-function lesson(l: LessonDef, num: string): (Paragraph | Table)[] {
+function lesson(l: LessonDef, num: string, coursePassMark: number): (Paragraph | Table)[] {
   const out: (Paragraph | Table)[] = [
     new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(`Lesson ${num}: ${l.title}`)] }),
-    new Paragraph({ children: [new TextRun({ text: `${label(l.kind)} · about ${l.minutes} minutes${l.isAssessment ? ` · counts towards completion, pass mark ${l.passMark ?? "course default"}%` : ""}`, color: SLATE, size: 20 })] }),
+    new Paragraph({ children: [new TextRun({ text: `${label(l.kind)} · about ${l.minutes} minutes${l.isAssessment ? ` · counts towards completion, pass mark ${l.passMark ?? coursePassMark}%` : ""}`, color: SLATE, size: 20 })] }),
     ...l.blocks.flatMap(block),
   ];
   if (l.prompt) out.push(box("Reflection prompt (the learner's answer is private to them)", [l.prompt], "EEF8F8", TEAL), spacer());
@@ -214,7 +214,7 @@ function course(c: CourseDef): Document {
     body.push(new Paragraph({ children: [new PageBreak()] }),
       new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(`Module ${mi + 1}: ${m.title}`)] }),
       new Paragraph({ children: runs(m.summary, { italics: true, color: SLATE }) }));
-    m.lessons.forEach((l, li) => body.push(...lesson(l, `${mi + 1}.${li + 1}`)));
+    m.lessons.forEach((l, li) => body.push(...lesson(l, `${mi + 1}.${li + 1}`, c.passMark)));
   });
 
   return new Document({
