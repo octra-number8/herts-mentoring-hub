@@ -5,7 +5,7 @@ Welcome. The Academy is for Lodge Mentors, Personal Mentors and newer Brethren. 
 *Prepare · Guide · Support · Enlighten*
 
 ## Getting started
-You will receive an invitation email. Open the link, choose a password (at least 12 characters) and you are in. Next time, sign in with your password, or choose "Email me a link" to sign in without one.
+Every member of a Hertfordshire Lodge can use the Academy. Go to the Hub's `/join` page (or "Set up your account" on the sign-in page) and enter the email address your Lodge holds for you. We email you a link, valid for 24 hours: open it, choose a password (at least 12 characters) and you are in. If you were sent an invitation instead, its link works the same way. Next time, sign in with your password, or choose "Email me a link" to sign in without one.
 
 ## My Learning
 Your home page. **Continue learning** takes you straight back to where you left off. You will also see suggested courses (essential ones first), upcoming training, your certificates and achievements.

@@ -15,7 +15,7 @@ export const newInviteToken = () => {
 
 const LEARNER_ROLES = ["learner", "personal_mentor", "lodge_mentor", "ld_contributor"];
 
-async function sendInvitationEmail(svc: DB, opts: { orgId: string; invitationId: string; personId: string; email: string; token: string; roles: string[]; message?: string | null }) {
+async function sendInvitationEmail(svc: DB, opts: { orgId: string; invitationId: string; personId: string; email: string; token: string; roles: string[]; message?: string | null; selfRequested?: boolean }) {
   const [{ data: person }, { data: org }] = await Promise.all([
     svc.from("persons").select("first_name").eq("id", opts.personId).single(),
     svc.from("organisations").select("name, short_name").eq("id", opts.orgId).single(),
@@ -25,13 +25,14 @@ async function sendInvitationEmail(svc: DB, opts: { orgId: string; invitationId:
   const link = `${serverEnv().appUrl}/invite/${opts.token}`;
   await enqueueEmail(svc, {
     orgId: opts.orgId, toEmail: opts.email, toPersonId: opts.personId, category: "security", idempotencyKey: `invitation:${opts.invitationId}`,
-    subject: learnerOnly ? "Your invitation to the Herts Mentoring Academy" : "Your invitation to the Hertfordshire Mentoring Hub",
+    subject: opts.selfRequested ? `Set up your ${learnerOnly ? "Herts Mentoring Academy" : "Mentoring Hub"} account`
+      : learnerOnly ? "Your invitation to the Herts Mentoring Academy" : "Your invitation to the Hertfordshire Mentoring Hub",
     markdown: [
       `Dear ${person?.first_name ?? "Brother"},`,
-      `You have been invited to ${place}.${opts.message ? `\n\n${opts.message}` : ""}`,
-      `[Accept your invitation and choose a password](${link})`,
+      opts.selfRequested ? `You asked to set up your account for ${place}.` : `You have been invited to ${place}.${opts.message ? `\n\n${opts.message}` : ""}`,
+      `[${opts.selfRequested ? "Set up your account" : "Accept your invitation"} and choose a password](${link})`,
       `If the button does not work, copy this address into your browser: ${link}`,
-      "The link works once and expires in 7 days. If you were not expecting this, you can ignore this email.",
+      `The link works once and expires in ${opts.selfRequested ? "24 hours" : "7 days"}. If you were not expecting this, you can ignore this email.`,
     ].join("\n\n"),
   });
 }
@@ -64,4 +65,38 @@ export async function resendInvitation(db: DB, svc: DB, invitationId: string) {
   const { data: inv } = await db.from("invitations").select("org_id, role_keys, message").eq("id", res.invitation_id).single();
   await sendInvitationEmail(svc, { orgId: inv!.org_id, invitationId: res.invitation_id, personId: res.person_id, email: res.email, token, roles: inv!.role_keys, message: inv!.message });
   return { ...res, token };
+}
+
+/**
+ * Self-registration from /join, run with the service role (no one is signed in).
+ * A current member gets an activation link for a Learner account; a member who
+ * already has an account gets a reminder of how to sign in. The caller shows
+ * the same message whatever happens, so nothing here reveals who is a member.
+ */
+export async function requestSelfRegistration(svc: DB, email: string) {
+  const { data: org } = await svc.from("organisations").select("id").eq("slug", serverEnv().orgSlug).single();
+  if (!org) throw new Error("Organisation not found");
+  const { token, hash } = newInviteToken();
+  const { data, error } = await svc.rpc("request_self_registration", { p_org: org.id, p_email: email, p_token_hash: hash });
+  if (error) throw error;
+  const res = data as { outcome: string; invitation_id?: string; person_id?: string; email?: string; roles?: string[] };
+  if (res.outcome === "invited") {
+    await sendInvitationEmail(svc, { orgId: org.id, invitationId: res.invitation_id!, personId: res.person_id!, email: res.email!, token, roles: res.roles ?? ["learner"], selfRequested: true });
+  } else if (res.outcome === "has_account") {
+    const { data: person } = await svc.from("persons").select("first_name").eq("id", res.person_id!).single();
+    const { appUrl } = serverEnv();
+    await enqueueEmail(svc, {
+      orgId: org.id, toEmail: res.email!, toPersonId: res.person_id!, category: "security",
+      idempotencyKey: `self-registration-existing:${res.person_id}:${new Date().toISOString().slice(0, 13)}`,
+      subject: "You already have a Mentoring Hub account",
+      markdown: [
+        `Dear ${person?.first_name ?? "Brother"},`,
+        "Someone, probably you, asked to set up an account with this email address. You already have one.",
+        `[Sign in](${appUrl}/login)`,
+        `If you have forgotten your password, you can [choose a new one](${appUrl}/forgot-password).`,
+        "If you did not ask for this, you can ignore this email.",
+      ].join("\n\n"),
+    });
+  }
+  return res.outcome;
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LodgeLearning } from "@/components/academy/lodge-learning";
 import { PortalArrangementsForm, ProposeChangeForm, RequestForm } from "@/components/portal/portal-forms";
 import { Badge, statusTone } from "@/components/ui/badge";
 import { DescriptionList, EmptyState, PageHeader, Panel, Tabs, Timeline } from "@/components/ui/layout";
 import { TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
+import { serverEnv } from "@/lib/env";
 import { progressionPrompt, type ProgressionSettings } from "@/lib/progression";
 import { formatDate, label } from "@/lib/utils";
 import { requirePortalLodge } from "@/server/admin/portal-scope";
@@ -13,7 +15,7 @@ import { proposeChange, saveArrangements, submitRequest } from "../actions";
 export const metadata: Metadata = { title: "My Lodge" };
 
 const TABS = [
-  { key: "overview", label: "Overview" }, { key: "members", label: "New members" }, { key: "support", label: "Support" }, { key: "activity", label: "Mentoring activity" },
+  { key: "overview", label: "Overview" }, { key: "members", label: "New members" }, { key: "learning", label: "Learning" }, { key: "support", label: "Support" }, { key: "activity", label: "Mentoring activity" },
 ] as const;
 type Tab = (typeof TABS)[number]["key"];
 const month = (m: number | null) => (m ? new Date(2000, m - 1).toLocaleString("en-GB", { month: "long" }) : null);
@@ -34,6 +36,7 @@ export default async function PortalLodgePage({ params, searchParams }: { params
       <Tabs tabs={TABS.map((t) => ({ ...t, href: `/portal/${lodgeId}?tab=${t.key}` }))} current={tab} />
       {tab === "overview" && <Overview />}
       {tab === "members" && <Members />}
+      {tab === "learning" && <LodgeLearning db={db} lodgeId={lodgeId} joinUrl={`${serverEnv().appUrl}/join`} />}
       {tab === "support" && <Support />}
       {tab === "activity" && <Activity />}
     </>

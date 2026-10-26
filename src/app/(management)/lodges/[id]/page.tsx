@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, mentoringStatusTone, statusTone } from "@/components/ui/badge";
 import { DescriptionList, EmptyState, PageHeader, Panel, Tabs, Timeline } from "@/components/ui/layout";
+import { LodgeLearning } from "@/components/academy/lodge-learning";
 import { RowLink, TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { progressionPrompt, type ProgressionSettings } from "@/lib/progression";
+import { serverEnv } from "@/lib/env";
 import { formatDate, formatDateTime, label } from "@/lib/utils";
 import { can, requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
@@ -15,13 +17,17 @@ import {
 
 export const metadata: Metadata = { title: "Lodge" };
 
-const TABS = ["overview", "activity", "members", "notes", "support"] as const;
+const TABS = ["overview", "activity", "members", "learning", "notes", "support"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function LodgePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const session = await requirePermission("lodges.read");
   const { id } = await params;
-  const tab = (TABS.includes((await searchParams).tab as Tab) ? (await searchParams).tab : "overview") as Tab;
+  const canLearning = can(session, "learning.records.read") || can(session, "members.read.detail.all")
+    || (can(session, "members.read.detail.allocated") && session.allocatedLodgeIds.includes(id));
+  const visibleTabs = TABS.filter((t) => t !== "learning" || canLearning);
+  const requested = (await searchParams).tab as Tab;
+  const tab = (visibleTabs.includes(requested) ? requested : "overview") as Tab;
   const db = await supabaseServer();
 
   const { data: found } = await db.from("v_lodge_overview").select("*").eq("id", id).maybeSingle();
@@ -37,7 +43,7 @@ export default async function LodgePage({ params, searchParams }: { params: Prom
     db.from("meeting_centres").select("id, name").order("name"),
   ]);
 
-  const tabs = TABS.map((t) => ({ key: t, label: { overview: "Overview", activity: "Activity", members: "Members", notes: "Notes", support: "Support" }[t], href: `/lodges/${id}?tab=${t}` }));
+  const tabs = visibleTabs.map((t) => ({ key: t, label: { overview: "Overview", activity: "Activity", members: "Members", learning: "Learning", notes: "Notes", support: "Support" }[t], href: `/lodges/${id}?tab=${t}` }));
 
   return (
     <>
@@ -65,6 +71,7 @@ export default async function LodgePage({ params, searchParams }: { params: Prom
       {tab === "overview" && <Overview />}
       {tab === "activity" && <Activity />}
       {tab === "members" && <Members />}
+      {tab === "learning" && <LodgeLearning db={db} lodgeId={id} joinUrl={`${serverEnv().appUrl}/join`} />}
       {tab === "notes" && <Notes />}
       {tab === "support" && <Support />}
     </>

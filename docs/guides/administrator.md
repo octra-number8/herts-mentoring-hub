@@ -4,7 +4,13 @@ For the Provincial Grand Mentor, Deputy and the technical administrator. Everyth
 
 ## People and accounts
 
-Accounts are by invitation only. A person record (name, Lodge, membership) exists separately from their Hub account, so someone can be in the Hub's membership records without being able to sign in.
+Every current member held from an approved membership import can set up his own Learner account at `/join` with the email address held for him. The link is valid for 24 hours. Nothing is created for an address that is not held for exactly one current member with a current Lodge membership; the page gives the same answer either way, so it never reveals who is a member. Members who share an email address, or have none, are set up by invitation. Mentor and Provincial roles are only ever added by an administrator.
+
+When an import (or the team) records a member as resigned, ceased, excluded or deceased, his account is suspended automatically and any open links are withdrawn; learning records are kept. If he is recorded as active again, the account is restored. A suspension made by hand is never lifted automatically.
+
+The **Learning** tab on a Lodge shows, for each current member, whether he has signed up and which courses he has started and completed, never answers or reflections. It is visible to learning administrators, to APGMen for their allocated Lodges, and to the Lodge Mentor through the Lodge portal once it is activated.
+
+Others can still be invited. A person record (name, Lodge, membership) exists separately from their Hub account, so someone can be in the Hub's membership records without being able to sign in.
 
 **Invite someone**
 1. Administration → Users → Invite.

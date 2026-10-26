@@ -7,6 +7,7 @@ export const publicEnv = {
 export function serverEnv() {
   return {
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    orgSlug: process.env.ORG_SLUG ?? "herts",
     appUrl: (process.env.APP_URL ?? "http://localhost:3100").replace(/\/$/, ""),
     emailDriver: (process.env.EMAIL_DRIVER ?? "smtp") as "smtp" | "resend" | "memory",
     emailFrom: process.env.EMAIL_FROM ?? "Hertfordshire Mentoring Hub <hub@localhost>",

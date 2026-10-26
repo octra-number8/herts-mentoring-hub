@@ -6802,6 +6802,16 @@ export type Database = {
           role_name: string
         }[]
       }
+      lodge_learning: {
+        Args: { p_lodge: string }
+        Returns: {
+          account_status: string
+          courses: Json
+          display_name: string
+          last_sign_in_at: string
+          person_id: string
+        }[]
+      }
       log_export: {
         Args: {
           p_dataset: string
@@ -6861,6 +6871,10 @@ export type Database = {
       report_quarterly_transition: {
         Args: { p_report: string; p_to: string }
         Returns: undefined
+      }
+      request_self_registration: {
+        Args: { p_email: string; p_org: string; p_token_hash: string }
+        Returns: Json
       }
       retention_run: {
         Args: { p_dry_run?: boolean; p_policy: string }

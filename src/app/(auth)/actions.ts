@@ -88,6 +88,21 @@ export async function verifyMfa(_: ActionState, fd: FormData): Promise<ActionSta
   redirect(safeNext(fd.get("next")) ?? (session ? homeFor(session) : "/"));
 }
 
+// ----- Self-registration ---------------------------------------------------------------
+export async function requestJoin(_: ActionState, fd: FormData): Promise<ActionState> {
+  const email = z.string().trim().email().safeParse(fd.get("email"));
+  if (!email.success) return { error: "Enter your email address.", fieldErrors: { email: "Enter your email address" } };
+  const { requestSelfRegistration } = await import("@/server/admin/invitations");
+  try {
+    await requestSelfRegistration(supabaseService(), email.data);
+  } catch (e) {
+    console.error("self-registration failed", e);
+    return { error: "We could not process that just now. Please try again in a few minutes." };
+  }
+  // Same response whatever the outcome, so the page never reveals who is a member.
+  return { ok: true, message: "Thank you. If that address is held for a current member of a Hertfordshire Lodge, we have emailed a link to set up your account. It expires in 24 hours. If nothing arrives, check your junk folder, then ask your Lodge Secretary which email address is held for you." };
+}
+
 // ----- Invitations -------------------------------------------------------------------
 export const hashToken = async (t: string) => createHash("sha256").update(t).digest("hex");
 
