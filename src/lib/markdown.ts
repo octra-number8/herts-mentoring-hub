@@ -13,7 +13,9 @@ const ALLOWED = {
 /** Markdown to sanitised HTML. Safe for content written by authorised users. */
 export function renderMarkdown(md: string | null | undefined): string {
   if (!md) return "";
-  return sanitizeHtml(marked.parse(md, { async: false }) as string, ALLOWED);
+  // Tables get a scrolling wrapper so a wide one never pushes the page sideways on a phone.
+  return sanitizeHtml(marked.parse(md, { async: false }) as string, ALLOWED)
+    .replace(/<table>/g, '<div class="prose-table"><table>').replace(/<\/table>/g, "</table></div>");
 }
 
 /** Plain-text version of Markdown. Links keep their address, e.g. "Accept (https://...)". */

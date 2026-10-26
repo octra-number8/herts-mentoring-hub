@@ -69,7 +69,8 @@ async function must<T>(p: PromiseLike<{ data: T; error: unknown }>, what: string
 const issueMark = (c: CourseDef) => (c.issue ? `[${c.issue}]` : null);
 
 function changeSummary(c: CourseDef, first: boolean): string {
-  const head = first ? `First online issue, adapted from ${c.source}.` : `Adapted from ${c.source}.`;
+  const source = c.source.replace(/\.+$/, "");
+  const head = first ? `First online issue, adapted from ${source}.` : `Adapted from ${source}.`;
   const lines = [issueMark(c) ? `${issueMark(c)} ${head}` : head, ...(c.changeSummary ?? []).map((s) => `- ${s}`)];
   return lines.join("\n");
 }

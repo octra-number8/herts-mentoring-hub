@@ -29,6 +29,9 @@ export default async function ApprovalsPage() {
   const approved = rows.filter((r) => r.status === "approved");
   const published = rows.filter((r) => r.status === "published").sort((a, b) => a.course.title.localeCompare(b.course.title));
   const canReview = can(session, "academy.review"), canPublish = can(session, "academy.publish");
+  const { data: org } = await db.from("organisations").select("settings").single();
+  const selfApproval = (org?.settings as { academy?: { allow_self_approval?: boolean } } | null)?.academy?.allow_self_approval === true;
+  const canApprove = (r: Row) => canReview && (r.created_by !== session.accountId || selfApproval);
   const firstLesson = new Map<string, string>();
   const { data: lessons } = rows.length ? await db.from("course_modules").select("version_id, position, lessons(id, position)").in("version_id", rows.map((r) => r.id)).order("position") : { data: [] };
   for (const m of lessons ?? []) {
@@ -56,7 +59,7 @@ export default async function ApprovalsPage() {
 
   return (
     <>
-      <PageHeader title="Academy" description="Course versions are approved by someone other than their author, then published." />
+      <PageHeader title="Academy" description={selfApproval ? "Course versions are approved, then published. Reviewers may approve versions they wrote." : "Course versions are approved by someone other than their author, then published."} />
       <AcademyAdminTabs session={session} current="approvals" counts={{ approvals: review.length + approved.length }} />
       <div className="space-y-6">
         <Panel id="awaiting" title={`Awaiting review (${review.length})`} padded={!review.length}>
@@ -64,8 +67,8 @@ export default async function ApprovalsPage() {
             <ul className="divide-y divide-line">
               {review.map((r) => (
                 <Item key={r.id} r={r}>
-                  {canReview && r.created_by === session.accountId && <span className="text-[13px] text-muted">You wrote this version, so another reviewer must approve it.</span>}
-                  {canReview && r.created_by !== session.accountId && <DecisionForm action={decideVersion} versionId={r.id} to="approved" trigger="Approve" title="Approve this version" variant="teal" />}
+                  {canReview && !canApprove(r) && <span className="text-[13px] text-muted">You wrote this version, so another reviewer must approve it.</span>}
+                  {canApprove(r) && <DecisionForm action={decideVersion} versionId={r.id} to="approved" trigger="Approve" title="Approve this version" variant="teal" />}
                   {canReview && <DecisionForm action={decideVersion} versionId={r.id} to="draft" trigger="Return to author" title="Return to the author" noteRequired description="The version goes back to draft with your note." />}
                 </Item>
               ))}
