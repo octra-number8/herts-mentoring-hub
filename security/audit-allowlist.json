@@ -1,0 +1,13 @@
+{
+  "_comment": "Accepted dependency advisories. Each entry needs a reason and a review date; after that date the check fails again. The security check reports these as ACCEPTED, never as passed.",
+  "advisories": [
+    {
+      "id": "GHSA-w5hq-g745-h8pq",
+      "package": "uuid",
+      "via": "exceljs@4.4.0 (uuid@8.3.2)",
+      "reason": "The flaw needs a caller-supplied output buffer (v3/v5/v6 with buf). exceljs only calls uuid.v4() with no arguments (lib/xlsx/xform/sheet/cf-ext/cf-rule-ext-xform.js), so it is not reachable. npm's suggested fix downgrades exceljs to 3.4.0.",
+      "accepted_on": "2026-10-27",
+      "review_by": "2027-01-31"
+    }
+  ]
+}

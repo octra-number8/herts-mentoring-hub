@@ -30,8 +30,10 @@ describe("Learning User isolation", () => {
     expect(data.portal_lodge_ids).toEqual([]);
   });
 
+  // Tables with column-level grants (content columns hidden from the API) are counted by a granted column.
+  const GRANTED_COLUMN: Record<string, string> = { email_outbox: "id", comm_preferences: "person_id" };
   it.each(MANAGEMENT_TABLES)("reads no rows from %s", async (table) => {
-    expect(await count(learner, table)).toBe(0);
+    expect(await count(learner, table, undefined, GRANTED_COLUMN[table] ?? "*")).toBe(0);
   });
 
   it("sees feature activations only for their own account", async () => {

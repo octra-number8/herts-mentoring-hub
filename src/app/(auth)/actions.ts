@@ -4,11 +4,12 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import type { ActionState } from "@/lib/action-state";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { serverEnv } from "@/lib/env";
 import { supabaseServer, supabaseService } from "@/server/supabase";
 import { getSession, homeFor } from "@/server/session";
 
-const safeNext = (n: unknown) => (typeof n === "string" && n.startsWith("/") && !n.startsWith("//") ? n : null);
+const safeNext = safeInternalPath;
 
 export async function signInWithPassword(_: ActionState, fd: FormData): Promise<ActionState> {
   const parsed = z.object({ email: z.string().email("Enter your email address"), password: z.string().min(1, "Enter your password") })
@@ -111,7 +112,6 @@ export async function acceptInvitation(_: ActionState, fd: FormData): Promise<Ac
   const p = passwordSchema.safeParse(fd.get("password"));
   if (!p.success) return { error: p.error.issues[0].message, fieldErrors: { password: p.error.issues[0].message } };
   if (fd.get("password") !== fd.get("confirm")) return { error: "The passwords do not match.", fieldErrors: { confirm: "The passwords do not match" } };
-  if (fd.get("agree") !== "on") return { error: "Please confirm you have read how the Hub uses your information.", fieldErrors: { agree: "Required" } };
 
   const svc = supabaseService();
   const { data: inv } = await svc.from("invitations").select("*").eq("token_hash", await hashToken(token)).maybeSingle();

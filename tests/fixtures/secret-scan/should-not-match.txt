@@ -1,0 +1,7 @@
+secret = "env(SUPABASE_AUTH_SECRET)"
+readFileSync(process.env.SEED_SECRETS_FILE ?? ".seed-secrets.json", "utf8")
+const p = process.env.SEED_PASSWORD;
+CRON_SECRET=local-cron-secret
+CRON_SECRET=ci-cron-secret-value
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:55422/postgres
+SUPABASE_SERVICE_ROLE_KEY=

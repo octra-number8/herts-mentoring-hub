@@ -7,7 +7,7 @@ What remains before the Hub can hold live information and go live. Items are gro
 | # | Item | Why it matters | Status |
 |---|---|---|---|
 | 1 | Confirm authority to extract, transfer and process membership data from Hermes/Adelphi/UGLE Portal | Brief 20.5: no live personal data is imported until confirmed | Open |
-| 2 | Identify the data controller, lawful bases, privacy notice wording and processor agreements (Supabase, Vercel, Resend) | UK GDPR | Open |
+| 2 | Identify the data controller, lawful bases, privacy notice wording and processor agreements (Supabase, Vercel, Resend) | UK GDPR | **Draft notice at `/privacy`**; facts to confirm in `docs/privacy/owner-checklist.md` |
 | 3 | Agree retention periods (A3 section 7 is still a draft; recommended baseline 12 months after departure) | Retention policies are built but disabled | Open |
 | 4 | Decide whether Provincial-level mentoring records are acceptable given A3 section 7 says the Personal Mentoring Plan is held by the Lodge Mentor and "not circulated" | The Hub centralises journey information | Open |
 | 5 | Confirm the provisional design assumptions in brief section 32 (listed below) | They are implemented as configurable defaults | Open |
@@ -56,6 +56,8 @@ Note on cost: a Supabase project on a paid organisation is billed per project (c
 - [ ] Remove the "Synthetic test data" environment label (`organisations.settings.environment_label`).
 
 ## Remaining build-side items (honest list)
+
+- **Security review, October 2026**: fixes and outstanding risks in `docs/security/security-review-2026-10.md`. Run `npm run security:check -- --release` before go-live, and complete its manual checks.
 
 - **(build) Application-level rate limiting.** Sign-in, email links and password reset are rate-limited by Supabase Auth. Public endpoints (`/whats-on`, `/unsubscribe`, `/api/calendar`, `/api/webhooks/resend`) rely on token secrecy and Vercel's platform protection; add Vercel WAF rate-limit rules or an app-level limiter before go-live.
 - **(build) Load check on staging** with realistic volumes (Hertfordshire's full Lodge and membership numbers). Local testing used 40 Lodges and about 800 synthetic members.

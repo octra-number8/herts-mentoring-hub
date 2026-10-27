@@ -1,6 +1,8 @@
 import "server-only";
 import { serverEnv } from "@/lib/env";
+import { escapeMarkdown } from "@/lib/markdown";
 import { formatDateTime } from "@/lib/utils";
+import { attachmentAllowed } from "../email/attachments";
 import { enqueueEmail, enqueueTemplate, processOutbox } from "../email/outbox";
 import { ensureCertificateFile } from "../pdf/certificate";
 import { supabaseService, type DB } from "../supabase";
@@ -35,7 +37,7 @@ async function handleBuiltIn(db: DB, ev: DomainEvent) {
         const person = r.persons as unknown as { email: string | null; first_name: string };
         if (!person?.email) continue;
         await enqueueEmail(db, { orgId: ev.org_id, toEmail: person.email, toPersonId: r.person_id, category: "operational", idempotencyKey: `event.cancelled:${ev.entity_id}:${r.person_id}`,
-          subject: `Cancelled: ${e?.title}`, markdown: `Dear ${person.first_name},\n\nWe are sorry: **${e?.title}** on ${formatDateTime(e?.starts_at)} has been cancelled.${p.reason ? `\n\n${p.reason}` : ""}` });
+          subject: `Cancelled: ${e?.title}`, markdown: `Dear ${escapeMarkdown(person.first_name)},\n\nWe are sorry: **${escapeMarkdown(e?.title ?? "")}** on ${formatDateTime(e?.starts_at)} has been cancelled.${p.reason ? `\n\n${escapeMarkdown(String(p.reason))}` : ""}` });
         await db.rpc("admin_notify", { p_account: (await accountOf(db, r.person_id))!, p_type: "event", p_title: "Event cancelled", p_body: e?.title ?? "", p_link: `/academy/events/${ev.entity_id}`, p_dedupe: `event.cancelled:${ev.entity_id}` });
       }
       return;
@@ -130,15 +132,22 @@ export async function processCampaigns(db: DB) {
   const now = new Date().toISOString();
   const { data: due } = await db.from("campaigns").select("*").or(`status.eq.approved,and(status.eq.scheduled,scheduled_for.lte.${now})`).limit(5);
   for (const c of due ?? []) {
+    // A campaign whose attachments are not its own files is failed rather than left half-sent.
+    const files = (c.attachments as { path: string; bucket: string; filename: string }[]) ?? [];
+    if (!files.every((a) => attachmentAllowed(c.org_id, a, c.id))) {
+      await db.from("campaigns").update({ status: "failed" }).eq("id", c.id).in("status", ["approved", "scheduled"]);
+      await db.rpc("admin_record_audit", { p_org: c.org_id, p_action: "campaign.failed", p_entity_type: "campaign", p_entity_id: c.id, p_details: { reason: "attachment outside the campaign folder" } });
+      continue;
+    }
     const { data: claimed } = await db.from("campaigns").update({ status: "sending" }).eq("id", c.id).in("status", ["approved", "scheduled"]).select("id").maybeSingle();
     if (!claimed) continue;
     const { data: recipients } = await db.from("campaign_recipients").select("id, person_id, email, name").eq("campaign_id", c.id).eq("status", "queued");
     for (const r of recipients ?? []) {
       const first = r.name.replace(/^(W Bro|VW Bro|RW Bro|Bro)\s+/i, "").split(" ")[0];
-      const body = c.body_markdown.replace(/\{\{\s*first_name\s*\}\}/g, first).replace(/\{\{\s*name\s*\}\}/g, r.name);
+      const body = c.body_markdown.replace(/\{\{\s*first_name\s*\}\}/g, escapeMarkdown(first)).replace(/\{\{\s*name\s*\}\}/g, escapeMarkdown(r.name));
       const ok = await enqueueEmail(db, { orgId: c.org_id, toEmail: r.email, toPersonId: r.person_id, subject: c.subject, preheader: c.preheader ?? undefined,
         markdown: body, category: c.category as "news", idempotencyKey: `campaign:${c.id}:${r.id}`, campaignRecipientId: r.id, replyTo: c.reply_to,
-        attachments: (c.attachments as { path: string; bucket: string; filename: string }[]) ?? [] });
+        attachments: (c.attachments as { path: string; bucket: string; filename: string }[]) ?? [], campaignId: c.id });
       if (ok) queued++;
     }
     await db.from("campaigns").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", c.id);
@@ -209,7 +218,7 @@ export async function processNotificationEmails(db: DB) {
     const ch = channel(n.account_id, n.type, n.essential);
     const person = (n.user_accounts as unknown as { person_id: string }).person_id;
     if (ch === "email") {
-      await enqueueTemplateNotification(db, n.org_id, person, `${n.title}${n.body ? `\n\n${n.body}` : ""}`, n.title, n.link, `notif:${n.id}`, n.essential);
+      await enqueueTemplateNotification(db, n.org_id, person, `${escapeMarkdown(n.title)}${n.body ? `\n\n${escapeMarkdown(n.body)}` : ""}`, n.title, n.link, `notif:${n.id}`, n.essential);
       await db.from("notifications").update({ emailed_at: now.toISOString() }).eq("id", n.id);
       stats.immediate++;
     } else if (ch === "daily" || (ch === "weekly" && now.getUTCDay() === 1)) {
@@ -220,7 +229,7 @@ export async function processNotificationEmails(db: DB) {
   for (const [acc, items] of byAccount) {
     const person = (items[0].user_accounts as unknown as { person_id: string }).person_id;
     const period = now.toISOString().slice(0, 10);
-    const list = items.map((i) => `- **${i.title}**${i.body ? `: ${i.body}` : ""}`).join("\n");
+    const list = items.map((i) => `- **${escapeMarkdown(i.title)}**${i.body ? `: ${escapeMarkdown(i.body)}` : ""}`).join("\n");
     const queued = await enqueueTemplate(db, { orgId: items[0].org_id, personId: person, category: "operational", templateKey: "digest", idempotencyKey: `digest:${acc}:${period}`,
       vars: { period: "daily", items: list, link: `${app()}/notifications` } });
     if (queued) {
@@ -235,7 +244,7 @@ async function enqueueTemplateNotification(db: DB, orgId: string, personId: stri
   const { data: person } = await db.from("persons").select("email, first_name").eq("id", personId).single();
   if (!person?.email) return;
   await enqueueEmail(db, { orgId, toEmail: person.email, toPersonId: personId, subject: title, category: essential ? "security" : "operational", idempotencyKey: key,
-    markdown: `Dear ${person.first_name},\n\n${body}${link ? `\n\n[Open in the Hub](${app()}${link})` : ""}` });
+    markdown: `Dear ${escapeMarkdown(person.first_name)},\n\n${body}${link ? `\n\n[Open in the Hub](${app()}${link})` : ""}` });
 }
 
 /** Run every background processor once. Safe to call concurrently: rows are claimed atomically. */

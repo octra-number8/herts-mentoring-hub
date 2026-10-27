@@ -40,7 +40,6 @@ test("Scenario 15: a member sets up his own account, and his APGMen sees his lea
   await expect(member.getByText("Welcome to the Herts Mentoring Academy.")).toBeVisible();
   await member.locator("input[name=password]").fill("Correct-horse-battery-9");
   await member.locator("input[name=confirm]").fill("Correct-horse-battery-9");
-  await member.getByRole("checkbox", { name: /I understand how the Hub uses my information/ }).check();
   await member.getByRole("button", { name: "Activate my account" }).click();
   await member.waitForURL(/\/academy/, { timeout: 90_000 });
   await expect(member.getByRole("navigation", { name: "Academy" })).toBeVisible();

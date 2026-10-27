@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { serverEnv } from "@/lib/env";
+import { escapeMarkdown } from "@/lib/markdown";
 import { enqueueEmail } from "../email/outbox";
 import type { DB } from "../supabase";
 
@@ -28,8 +29,8 @@ async function sendInvitationEmail(svc: DB, opts: { orgId: string; invitationId:
     subject: opts.selfRequested ? `Set up your ${learnerOnly ? "Herts Mentoring Academy" : "Mentoring Hub"} account`
       : learnerOnly ? "Your invitation to the Herts Mentoring Academy" : "Your invitation to the Hertfordshire Mentoring Hub",
     markdown: [
-      `Dear ${person?.first_name ?? "Brother"},`,
-      opts.selfRequested ? `You asked to set up your account for ${place}.` : `You have been invited to ${place}.${opts.message ? `\n\n${opts.message}` : ""}`,
+      `Dear ${escapeMarkdown(person?.first_name ?? "Brother")},`,
+      opts.selfRequested ? `You asked to set up your account for ${place}.` : `You have been invited to ${place}.${opts.message ? `\n\n${escapeMarkdown(opts.message)}` : ""}`,
       `[${opts.selfRequested ? "Set up your account" : "Accept your invitation"} and choose a password](${link})`,
       `If the button does not work, copy this address into your browser: ${link}`,
       `The link works once and expires in ${opts.selfRequested ? "24 hours" : "7 days"}. If you were not expecting this, you can ignore this email.`,
@@ -90,7 +91,7 @@ export async function requestSelfRegistration(svc: DB, email: string) {
       idempotencyKey: `self-registration-existing:${res.person_id}:${new Date().toISOString().slice(0, 13)}`,
       subject: "You already have a Mentoring Hub account",
       markdown: [
-        `Dear ${person?.first_name ?? "Brother"},`,
+        `Dear ${escapeMarkdown(person?.first_name ?? "Brother")},`,
         "Someone, probably you, asked to set up an account with this email address. You already have one.",
         `[Sign in](${appUrl}/login)`,
         `If you have forgotten your password, you can [choose a new one](${appUrl}/forgot-password).`,

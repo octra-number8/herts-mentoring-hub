@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { check, defineAction, UserError, zf } from "@/server/action";
 import { cleanFilters, parseAudience, personalise, withoutPerson, withPerson } from "@/server/comms/audience";
+import { attachmentAllowed } from "@/server/email/attachments";
 import { enqueueEmail } from "@/server/email/outbox";
 import { kickJobs } from "@/server/jobs/kick";
 import { can, type SessionContext } from "@/server/session";
@@ -144,11 +145,12 @@ export const sendTestEmail = defineAction(z.object({ campaign_id: zf.uuid() }), 
   if (!c) throw new UserError("Campaign not found.");
   if (!session.email) throw new UserError("Your account has no email address.");
   if (!c.body_markdown.trim()) throw new UserError("Write the message first.");
+  if (!((c.attachments as { bucket: string; path: string; filename: string }[]) ?? []).every((a) => attachmentAllowed(session.orgId, a, c.id))) throw new UserError("Remove the attachment and upload it again.");
   // The campaign was read through RLS above; the outbox is written by the system.
   await enqueueEmail(supabaseService(), {
     orgId: session.orgId, toEmail: session.email, toPersonId: session.personId, subject: `[Test] ${c.subject}`, preheader: c.preheader ?? undefined,
     markdown: personalise(c.body_markdown, session.displayName), category: "operational", idempotencyKey: `campaign-test:${c.id}:${randomUUID()}`,
-    replyTo: c.reply_to, attachments: (c.attachments as { bucket: string; path: string; filename: string }[]) ?? [],
+    replyTo: c.reply_to, attachments: (c.attachments as { bucket: string; path: string; filename: string }[]) ?? [], campaignId: c.id,
   });
   kickJobs();
   return { message: `Test email sent to ${session.email}. It can take a minute to arrive.` };

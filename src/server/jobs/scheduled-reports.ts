@@ -1,4 +1,5 @@
 import "server-only";
+import { escapeMarkdown } from "@/lib/markdown";
 import { createHmac } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { publicEnv } from "@/lib/env";
@@ -83,7 +84,7 @@ export async function processScheduledReports(db: DB, now = new Date()) {
       await enqueueEmail(db, {
         orgId: r.org_id, toEmail: person.email, toPersonId: owner.person_id, category: "operational", idempotencyKey: `scheduled-report:${r.id}:${period}`,
         subject: `Your ${r.schedule} report: ${r.name}`,
-        markdown: `Dear ${person.first_name},\n\nYour scheduled report **${r.name}** is attached as an Excel file (${rows.length} records). It contains only what your role allows you to see.\n\nYou can change or stop the schedule from the report in the Hub.`,
+        markdown: `Dear ${escapeMarkdown(person.first_name)},\n\nYour scheduled report **${escapeMarkdown(r.name)}** is attached as an Excel file (${rows.length} records). It contains only what your role allows you to see.\n\nYou can change or stop the schedule from the report in the Hub.`,
         attachments: [{ bucket: "documents", path, filename: `${r.name.replace(/[^\w\- ]+/g, "").trim() || "Report"} ${now.toISOString().slice(0, 10)}.xlsx` }],
       });
       stats.sent++;

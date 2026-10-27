@@ -67,6 +67,7 @@ export default async function WhatsOnPage() {
           </ul>
         )}
       </main>
+      <footer className="mx-auto max-w-4xl px-4 pb-8 text-[13px] text-muted sm:px-6"><Link href="/privacy" className="underline underline-offset-2 hover:text-navy-900">Privacy notice</Link></footer>
     </div>
   );
 }

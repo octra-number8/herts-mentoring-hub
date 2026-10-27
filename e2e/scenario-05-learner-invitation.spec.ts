@@ -34,7 +34,6 @@ async function accept(browser: Browser, email: string, after: Date) {
   await page.goto(new URL(link!).pathname);
   await page.locator("input[name=password]").fill("Correct-horse-battery-9");
   await page.locator("input[name=confirm]").fill("Correct-horse-battery-9");
-  await page.getByRole("checkbox", { name: /I understand how the Hub uses my information/ }).check();
   await page.getByRole("button", { name: "Activate my account" }).click();
   await page.waitForURL(/\/academy/, { timeout: 90_000 });
   return { ctx, page };

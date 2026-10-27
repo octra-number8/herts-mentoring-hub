@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ActionForm, CheckboxField, SubmitButton, TextField } from "@/components/ui/form";
+import { ActionForm, SubmitButton, TextField } from "@/components/ui/form";
 import { supabaseService } from "@/server/supabase";
 import { acceptInvitation, hashToken } from "../../actions";
 
@@ -31,8 +31,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
         <input type="hidden" name="token" value={token} />
         <TextField label="Password" name="password" type="password" autoComplete="new-password" required hint="At least 12 characters, with letters and a number or symbol." />
         <TextField label="Confirm password" name="confirm" type="password" autoComplete="new-password" required />
-        <CheckboxField name="agree" label="I understand how the Hub uses my information"
-          hint="The Hub keeps only what mentoring and learning need: your name, contact details, Lodge and learning record. Your learning record is visible to you and to authorised Provincial administrators. Your Lodge Mentor and Assistant Provincial Grand Mentor can see which courses you have started and completed, but never your answers or reflections." />
+        <p className="mb-5 text-sm text-slate-ink">The Hub keeps only what mentoring and learning need. Your Lodge Mentor and Assistant Provincial Grand Mentor can see which courses you have started and completed, but never your answers or reflections. The <Link href="/privacy" className="text-navy-700 underline underline-offset-2">privacy notice</Link> explains what is held, who can see it and your rights.</p>
         <SubmitButton className="w-full" pendingText="Activating…">Activate my account</SubmitButton>
       </ActionForm>
     </>

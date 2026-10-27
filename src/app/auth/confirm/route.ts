@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { supabaseServer } from "@/server/supabase";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 /** Verifies token-hash links (used when email templates link directly to the app). */
 export async function GET(request: NextRequest) {
@@ -8,7 +9,7 @@ export async function GET(request: NextRequest) {
   const tokenHash = url.searchParams.get("token_hash");
   const type = url.searchParams.get("type") as EmailOtpType | null;
   const next = url.searchParams.get("next");
-  const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const safe = safeInternalPath(next) ?? "/";
   if (tokenHash && type) {
     const supabase = await supabaseServer();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });

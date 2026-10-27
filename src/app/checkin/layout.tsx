@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function CheckinLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default function CheckinLayout({ children }: { children: React.ReactNode 
           <span className="text-[16px] font-semibold text-navy-900">Mentoring Hub check-in</span>
         </div>
         <main className="rounded-lg border border-line bg-white p-6 shadow-sm">{children}</main>
+        <p className="mt-6 text-center text-[13px] text-muted"><Link href="/privacy" className="underline underline-offset-2 hover:text-navy-900">Privacy notice</Link></p>
       </div>
     </div>
   );

@@ -1,0 +1,8 @@
+SUPABASE_SERVICE_ROLE_KEY=abcdefghijklmnop1234
+RESEND_API_KEY=re_abcd1234_efgh5678
+export CRON_SECRET=Zx9-real-looking-value
+  password: "Hunter2-correct-horse",
+const PASSWORD = process.env.SEED_PASSWORD ?? "Hub-Test-Literal-9999";
+-----BEGIN PRIVATE KEY-----
+DATABASE_URL=postgresql://admin:s3cretpassw0rd@db.example.net:5432/x
+whsec_abcdefghijklmnopqrstuvwxyz12

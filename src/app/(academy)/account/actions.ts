@@ -61,6 +61,10 @@ export async function finishMfaEnrol(_: ActionState, fd: FormData): Promise<Acti
   const code = String(fd.get("code") ?? "").replace(/\s/g, "");
   const factorId = String(fd.get("factorId") ?? "");
   if (!/^\d{6}$/.test(code)) return { error: "Enter the 6-digit code from your authenticator app.", fieldErrors: { code: "Enter the 6-digit code" } };
+  // Same guard as beginMfaEnrol: replacing an authenticator needs a fully verified session.
+  const session = await getSession();
+  if (!session) return { error: "Please sign in again." };
+  if (session.mfaRequired && session.aal !== "aal2") return { error: "Please complete two-step verification first." };
   const db = await supabaseServer();
   const { data: ch, error: e1 } = await db.auth.mfa.challenge({ factorId });
   if (e1 || !ch) return { error: "We could not verify the code. Please start again." };

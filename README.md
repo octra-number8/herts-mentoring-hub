@@ -33,6 +33,7 @@ npm run lint && npm run typecheck
 npm test                    # database, RLS, permission and workflow tests (resets the local DB)
 npm run test:e2e            # Playwright end-to-end and accessibility tests
 npx tsx scripts/smoke.ts pgm /dashboard /lodges     # quick page checks as a user
+npm run security:check      # audit, secrets, static, database and access-control checks (see docs/security/self-check.md)
 ```
 
 ## Documentation
@@ -51,3 +52,5 @@ npx tsx scripts/smoke.ts pgm /dashboard /lodges     # quick page checks as a use
 | Administrator guide | `docs/guides/administrator.md` |
 | User guides | `docs/guides/` |
 | Production readiness | `docs/production-readiness.md` |
+| Security review and self-check | `docs/security/` |
+| Privacy notice owner checklist | `docs/privacy/owner-checklist.md` |

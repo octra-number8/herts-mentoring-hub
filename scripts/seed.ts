@@ -9,6 +9,7 @@
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { generateSync } from "otplib";
+import { randomBytes } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { config } from "dotenv";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
@@ -18,7 +19,9 @@ config({ path: process.env.ENV_FILE ?? ".env.local" });
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const PASSWORD = process.env.SEED_PASSWORD ?? "Hub-Test-Password-2026";
+// A fresh random password per seed (recorded in .seed-secrets.json), so no fixed test
+// password exists in the repository for anyone to reuse on a hosted environment.
+const PASSWORD = process.env.SEED_PASSWORD ?? `Hub-${randomBytes(18).toString("base64url")}-1`;
 
 if (!URL.includes("127.0.0.1") && !URL.includes("localhost") && process.env.ALLOW_REMOTE_SEED !== "yes-synthetic-only") {
   throw new Error("Refusing to seed a non-local database. Set ALLOW_REMOTE_SEED=yes-synthetic-only for a synthetic staging project.");

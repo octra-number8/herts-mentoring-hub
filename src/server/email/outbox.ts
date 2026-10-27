@@ -1,8 +1,9 @@
 import "server-only";
-import { interpolate } from "@/lib/markdown";
+import { escapeMarkdown, interpolate } from "@/lib/markdown";
 import { serverEnv } from "@/lib/env";
 import type { DB } from "../supabase";
 import { EmailSendError, sendEmail } from "./driver";
+import { attachmentAllowed } from "./attachments";
 import { renderEmail } from "./layout";
 
 export type EmailCategory = "security" | "operational" | "learning" | "events" | "news";
@@ -24,10 +25,15 @@ type Enqueue = {
   campaignRecipientId?: string | null;
   replyTo?: string | null;
   attachments?: { path: string; bucket: string; filename: string }[];
+  /** Set for campaign mail: its attachments must come from this campaign's folder. */
+  campaignId?: string | null;
 };
 
 /** Queue an email. Idempotent: the same key is never queued twice. */
 export async function enqueueEmail(db: DB, e: Enqueue): Promise<boolean> {
+  for (const a of e.attachments ?? []) {
+    if (!attachmentAllowed(e.orgId, a, e.campaignId)) throw new Error("Email attachment is not from an allowed location");
+  }
   const { data: org } = await db.from("organisations").select("name, settings").eq("id", e.orgId).single();
   let unsubscribeUrl: string | null = null;
   if (OPTIONAL.includes(e.category) && e.toPersonId) {
@@ -57,10 +63,13 @@ export async function enqueueTemplate(db: DB, opts: {
   ]);
   if (!tpl || !person?.email || person.anonymised_at) return false;
   if (!mayEmail(opts.category, pref)) return false;
-  const vars = { first_name: person.first_name, name: person.display_name, org_short: org?.short_name, ...opts.vars };
+  // Names come from records: escape them so they cannot add links or formatting to the email.
+  // The subject is plain text, so it takes the names as they are.
+  const plain = { first_name: person.first_name, name: person.display_name, org_short: org?.short_name, ...opts.vars };
+  const vars = { ...plain, first_name: escapeMarkdown(person.first_name), name: escapeMarkdown(person.display_name ?? "") };
   return enqueueEmail(db, {
     orgId: opts.orgId, toEmail: person.email, toPersonId: opts.personId,
-    subject: interpolate(tpl.subject, vars, { escape: false }), markdown: interpolate(tpl.body_markdown, vars),
+    subject: interpolate(tpl.subject, plain, { escape: false }), markdown: interpolate(tpl.body_markdown, vars),
     category: opts.category, idempotencyKey: opts.idempotencyKey,
   });
 }

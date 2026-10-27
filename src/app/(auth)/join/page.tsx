@@ -15,6 +15,7 @@ export default function JoinPage() {
         <TextField label="Email address" name="email" type="email" autoComplete="email" required />
         <SubmitButton className="w-full" pendingText="Sending…">Email me a link</SubmitButton>
       </ActionForm>
+      <p className="mt-4 text-sm text-muted">We use your email address only to check it against membership records and send the link. The <Link href="/privacy" className="text-navy-700 underline underline-offset-2">privacy notice</Link> explains how the Hub uses your information.</p>
       <p className="mt-6 text-sm">Already have an account? <Link href="/login" className="text-navy-700 underline underline-offset-2">Sign in</Link></p>
     </>
   );

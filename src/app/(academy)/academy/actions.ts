@@ -97,6 +97,9 @@ async function uploadEvidence(db: DB, personId: string, file: unknown): Promise<
   return path;
 }
 
+/** The service role removes evidence files, so only ever one in the learner's own folder. */
+const ownEvidence = (personId: string, path: string) => path.startsWith(`${personId}/`) && !path.includes("..");
+
 const externalFields = {
   provider: z.enum(PROVIDERS),
   title: zf.required("Title", 300),
@@ -128,7 +131,7 @@ export const updateExternalLearning = defineAction(
     const res = check(await db.from("external_learning").update({ provider: i.provider, title: i.title, url: i.url, completed_on: i.completed_on, evidence_path })
       .eq("id", i.id).select("id"));
     if (!res.length) throw new UserError("This record can no longer be changed.");
-    if (current.evidence_path && current.evidence_path !== evidence_path) await supabaseService().storage.from("evidence").remove([current.evidence_path]);
+    if (current.evidence_path && current.evidence_path !== evidence_path && ownEvidence(session.personId, current.evidence_path)) await supabaseService().storage.from("evidence").remove([current.evidence_path]);
     return { message: "Saved.", revalidate: ["/academy/progress"] };
   },
   LEARN,
@@ -136,13 +139,13 @@ export const updateExternalLearning = defineAction(
 
 export const deleteExternalLearning = defineAction(
   z.object({ id: zf.uuid() }),
-  async (i, { db }) => {
+  async (i, { db, session }) => {
     // Read through RLS first; only then tidy the stored file.
     const current = check(await db.from("external_learning").select("id, evidence_path").eq("id", i.id).maybeSingle());
     if (!current) throw new UserError("Record not found.");
     const res = check(await db.from("external_learning").delete().eq("id", i.id).select("id"));
     if (!res.length) throw new UserError("Verified records cannot be removed.");
-    if (current.evidence_path) await supabaseService().storage.from("evidence").remove([current.evidence_path]);
+    if (current.evidence_path && ownEvidence(session.personId, current.evidence_path)) await supabaseService().storage.from("evidence").remove([current.evidence_path]);
     return { message: "Removed.", revalidate: ["/academy/progress"] };
   },
   LEARN,

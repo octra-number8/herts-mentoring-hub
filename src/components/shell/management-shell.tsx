@@ -49,6 +49,9 @@ export function ManagementShell({ session, children }: { session: SessionContext
           </div>
         </header>
         <main id="main" className="mx-auto w-full max-w-[1320px] flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <footer className="border-t border-line bg-white px-4 py-4 text-center text-[13px] text-muted no-print sm:px-6 lg:px-8">
+          {session.org.name} · Mentoring Hub · <Link href="/privacy" className="underline underline-offset-2 hover:text-navy-900">Privacy notice</Link>
+        </footer>
       </div>
     </div>
   );

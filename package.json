@@ -12,7 +12,8 @@
     "db:types": "supabase gen types typescript --local > src/types/database.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "security:check": "node scripts/security-check.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

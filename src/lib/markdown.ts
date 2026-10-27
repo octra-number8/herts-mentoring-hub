@@ -25,6 +25,13 @@ export function stripMarkdown(md: string): string {
     .replace(/&amp;/g, "&").replace(/\n{3,}/g, "\n\n").trim();
 }
 
+/**
+ * Escape text from records (names, titles, messages) before it is placed in
+ * Markdown, so it cannot add links or formatting to a genuine Hub email
+ * (":" and "." too, which stops bare addresses being auto-linked).
+ */
+export const escapeMarkdown = (s: string) => s.replace(/[\\`*_[\]()#+!<>|~:.]/g, (c) => `\\${c}`);
+
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 /** Replace {{name}} placeholders. Values are escaped for Markdown/HTML safety. */

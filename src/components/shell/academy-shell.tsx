@@ -37,7 +37,7 @@ export function AcademyShell({ session, children }: { session: SessionContext; c
       </header>
       <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
       <footer className="border-t border-line bg-white py-5 text-center text-[13px] text-muted no-print">
-        {session.org.name} · Herts Mentoring Academy
+        {session.org.name} · Herts Mentoring Academy · <Link href="/privacy" className="underline underline-offset-2 hover:text-navy-900">Privacy notice</Link>
       </footer>
     </div>
   );

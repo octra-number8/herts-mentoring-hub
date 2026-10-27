@@ -45,8 +45,8 @@ export function anon(): SupabaseClient {
   return createClient(URL(), process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
 }
 
-export async function count(c: SupabaseClient, table: string, filter?: (q: any) => any): Promise<number> {
-  let q = c.from(table).select("*", { count: "exact", head: true });
+export async function count(c: SupabaseClient, table: string, filter?: (q: any) => any, columns = "*"): Promise<number> {
+  let q = c.from(table).select(columns, { count: "exact", head: true });
   if (filter) q = filter(q);
   const { count: n, error } = await q;
   if (error) throw new Error(`${table}: ${error.message}`);

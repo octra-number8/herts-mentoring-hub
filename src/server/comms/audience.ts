@@ -5,6 +5,8 @@
  * present key as an active filter, so an empty list would match nobody.
  */
 
+import { escapeMarkdown } from "@/lib/markdown";
+
 export type AudienceFilters = {
   lodge_ids?: string[];
   area_ids?: string[];
@@ -99,5 +101,5 @@ export function describeAudience(f: AudienceFilters, scope: "province" | "alloca
 /** Replace {{first_name}} and {{name}} as the sending job does. */
 export function personalise(markdown: string, displayName: string): string {
   const first = displayName.replace(/^(W Bro|VW Bro|RW Bro|Bro)\s+/i, "").split(" ")[0] ?? "";
-  return markdown.replace(/\{\{\s*first_name\s*\}\}/g, first).replace(/\{\{\s*name\s*\}\}/g, displayName);
+  return markdown.replace(/\{\{\s*first_name\s*\}\}/g, escapeMarkdown(first)).replace(/\{\{\s*name\s*\}\}/g, escapeMarkdown(displayName));
 }
