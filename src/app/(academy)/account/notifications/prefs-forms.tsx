@@ -36,7 +36,7 @@ export function EmailPrefsForm({ learning, events, news, unsubscribed }: { learn
     <ActionForm action={saveEmailPreferences} className="space-y-3">
       <CheckboxField label="Learning" name="learning" defaultChecked={learning} hint="Course reminders and suggestions from the Academy." />
       <CheckboxField label="Events" name="events" defaultChecked={events} hint="Event reminders, follow-ups and invitations to training." />
-      <CheckboxField label="News and updates" name="news" defaultChecked={news} hint="Occasional news from the Provincial mentoring team. Off unless you choose it." />
+      <CheckboxField label="News and updates" name="news" defaultChecked={news} hint="Occasional news from the Provincial mentoring team. Untick to stop them." />
       <div className="border-t border-line pt-3">
         <CheckboxField label="Unsubscribe from all optional email" name="unsubscribe_all" defaultChecked={unsubscribed}
           hint="You will still receive essential messages about your account security, your bookings and your role." />

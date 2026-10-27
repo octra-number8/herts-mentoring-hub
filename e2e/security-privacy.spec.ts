@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { signIn } from "./helpers";
+import { archiveCourses, createPublishedCourse, serviceClient } from "./academy-fixtures";
 
 // October 2026 security and privacy review (docs/security/security-review-2026-10.md).
 
@@ -45,4 +46,26 @@ test("pages send a nonce-based Content Security Policy and run without violation
   await page.goto("/dashboard");
   await page.goto("/reports");
   expect(violations).toEqual([]);
+});
+
+test("course videos from YouTube load only when the learner chooses", async ({ page }) => {
+  test.setTimeout(180_000);
+  const stamp = `${Date.now().toString(36)}vid`;
+  const course = await createPublishedCourse(stamp);
+  try {
+    const welcome = course.lessons.find((l) => l.kind === "content")!;
+    await serviceClient().from("lessons").update({ content: { blocks: [{ type: "video", title: "Synthetic video", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }] } }).eq("id", welcome.id);
+    const external: string[] = [];
+    page.on("request", (r) => { if (/youtube|ytimg|vimeo/.test(new URL(r.url()).hostname)) external.push(r.url()); });
+    await signIn(page, "learninglead");
+    await page.goto(`/academy/author/preview/${course.versionId}/${welcome.id}`);
+    const load = page.getByRole("button", { name: "Load video from YouTube" });
+    await expect(load).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator("iframe[src*='youtube']")).toHaveCount(0);
+    expect(external).toEqual([]);
+    await load.click();
+    await expect(page.locator("iframe[title='Synthetic video']")).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+  } finally {
+    await archiveCourses(`e2e-course-${stamp}`);
+  }
 });

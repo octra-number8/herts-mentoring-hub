@@ -1,6 +1,7 @@
 import { renderMarkdown } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 import { PRINCIPLES, videoEmbed, type Block } from "@/server/academy/content";
+import { ExternalVideo } from "./video-embed";
 
 /** The four Hertfordshire principles, always in canonical order. */
 export function PrinciplesPanel({ intro }: { intro?: string }) {
@@ -63,7 +64,7 @@ export function LessonBlock({ block, media }: { block: Block; media: Record<stri
             {v.kind === "mp4" ? (
               <video controls preload="metadata" className="h-full w-full" title={block.title}><source src={v.src} type="video/mp4" /></video>
             ) : (
-              <iframe src={v.src} title={block.title} className="h-full w-full" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
+              <ExternalVideo src={v.src} title={block.title} provider={v.kind} />
             )}
           </div>
           <figcaption className="mt-1.5 text-[13px] text-muted">{block.title}</figcaption>

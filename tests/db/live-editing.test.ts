@@ -12,22 +12,27 @@ describe("Academy live editing", () => {
   const db = service();
   afterAll(() => setLive(false));
 
-  it("lets authors edit a published version in place only while live editing is on", async () => {
+  it("lets administrators edit a published version in place only while live editing is on", async () => {
     const { data: v } = await db.from("course_versions").select("id, title, course_id").eq("org_id", secrets.orgId).eq("status", "published").limit(1).single();
     const { data: lesson } = await db.from("lessons").select("id, title, course_modules!inner(version_id)").eq("course_modules.version_id", v!.id).limit(1).single();
-    const author = await as("author");
+    const admin = await as("pgm");
 
     await setLive(false);
-    const { data: off } = await author.from("lessons").update({ title: "Edited while off" }).eq("id", lesson!.id).select("id");
+    const { data: off } = await admin.from("lessons").update({ title: "Edited while off" }).eq("id", lesson!.id).select("id");
     expect(off).toEqual([]);
 
     await setLive(true);
-    const { data: on, error } = await author.from("lessons").update({ title: `${lesson!.title} (live)` }).eq("id", lesson!.id).select("id");
+    // Authors and the learning lead are not administrators, so live editing does not apply to them.
+    for (const key of ["author", "learninglead"]) {
+      const { data: other } = await (await as(key)).from("lessons").update({ title: "Edited by non-admin" }).eq("id", lesson!.id).select("id");
+      expect(other).toEqual([]);
+    }
+    const { data: on, error } = await admin.from("lessons").update({ title: `${lesson!.title} (live)` }).eq("id", lesson!.id).select("id");
     expect(error).toBeNull();
     expect(on).toHaveLength(1);
 
     // A live title change shows in the catalogue.
-    const { error: e2 } = await author.from("course_versions").update({ title: `${v!.title} (live)` }).eq("id", v!.id);
+    const { error: e2 } = await admin.from("course_versions").update({ title: `${v!.title} (live)` }).eq("id", v!.id);
     expect(e2).toBeNull();
     expect((await db.from("courses").select("title").eq("id", v!.course_id).single()).data!.title).toBe(`${v!.title} (live)`);
 

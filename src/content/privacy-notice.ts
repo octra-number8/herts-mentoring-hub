@@ -7,7 +7,7 @@
  * it. See docs/privacy/owner-checklist.md. British English, no em-dashes (A3).
  */
 export const PRIVACY_NOTICE_UPDATED = "27 October 2026";
-export const PRIVACY_NOTICE_VERSION = "Draft 0.1";
+export const PRIVACY_NOTICE_VERSION = "Draft 0.2";
 
 export const PLACEHOLDER = "[OWNER TO CONFIRM";
 
@@ -16,14 +16,14 @@ This notice explains how the Hertfordshire Mentoring Hub and the Herts Mentoring
 
 ## Who is responsible for your information
 
-The Hub is run for mentoring in the Province of Hertfordshire. The organisation responsible for your information (the "controller") is **[OWNER TO CONFIRM: the legal name of the controller, for example the Provincial Grand Lodge of Hertfordshire, and whether any processing is shared with the United Grand Lodge of England or with individual Lodges]**.
+The Hub is run for mentoring in the Province of Hertfordshire. The organisation responsible for your information (the "controller") is the Provincial Grand Lodge of Hertfordshire.
 
 Contact for anything in this notice:
 
-- Data protection contact: **[OWNER TO CONFIRM: name or role, and email address, for data protection questions and requests]**
+- Data protection contact: the Provincial Office, asstmentor@hertfordshirefreemasons.org.uk
 - Post: Provincial Office, Fleet House, 10 Parkway, St Albans AL3 6PA
 - Mentoring team: mentor@hertfordshirefreemasons.org.uk, 01727 833061
-- Data Protection Officer: **[OWNER TO CONFIRM: whether a Data Protection Officer is appointed, and their contact details if so]**
+- Data Protection Officer: the Province has appointed one, who can be reached through the data protection contact above
 
 ## What information the Hub holds
 
@@ -44,23 +44,23 @@ The Hub keeps only what mentoring and learning need. It does not hold your date 
 ## Where the information comes from
 
 - **From you**: when you set up an account, take a course, book an event, record learning or contact the mentoring team.
-- **From membership records**: the Provincial Mentoring Team imports membership details (name, contact details, membership number, Lodge and degree dates) from reports taken from the United Grand Lodge of England's membership systems (Hermes, Adelphi or the UGLE Portal) **[OWNER TO CONFIRM: the exact systems and who provides the reports]**.
+- **From membership records**: the Provincial Mentoring Team imports membership details (name, contact details, membership number, Lodge and degree dates) from reports taken from Adelphi, the United Grand Lodge of England's membership system.
 - **From the mentoring team**: Assistant Provincial Grand Mentors, Lodge Mentors and other team members record contact, visits, notes and support.
 - **From other people**: someone may ask for support for you or raise a concern about your welfare.
 - **From our email provider**: whether an email was delivered, bounced or marked as spam.
 
 ## Why the information is used, and the lawful basis
 
-Data protection law requires a lawful basis for each use. The bases below are proposed and must be confirmed by the controller before the Hub holds live information.
+Data protection law requires a lawful basis for each use.
 
-| Purpose | Proposed lawful basis |
+| Purpose | Lawful basis |
 |---|---|
-| Supporting members through mentoring: allocations, records of contact, visits, reviews and support | Legitimate interests in supporting members of the Province **[OWNER TO CONFIRM]** |
-| Running the Academy: accounts, courses, progress and certificates | Legitimate interests in providing learning to members **[OWNER TO CONFIRM]** |
-| Organising mentoring events and recording attendance | Legitimate interests **[OWNER TO CONFIRM]** |
-| Essential emails: account security, sign-in links, bookings and anything needed for a role you hold | Legitimate interests **[OWNER TO CONFIRM]** |
-| Optional emails: news, learning suggestions and event invitations | **[OWNER TO CONFIRM: consent, or legitimate interests with an easy way to opt out, and how the Privacy and Electronic Communications Regulations apply]** |
-| Keeping the Hub secure: two-step verification, audit records and backups | Legitimate interests, and the legal duty to keep personal information secure **[OWNER TO CONFIRM]** |
+| Supporting members through mentoring: allocations, records of contact, visits, reviews and support | Legitimate interests in supporting members of the Province |
+| Running the Academy: accounts, courses, progress and certificates | Legitimate interests in providing learning to members |
+| Organising mentoring events and recording attendance | Legitimate interests |
+| Essential emails: account security, sign-in links, bookings and anything needed for a role you hold | Legitimate interests |
+| Optional emails: news, learning suggestions and event invitations | Legitimate interests. You receive them unless you opt out, which you can do from any of these emails or under My account, Notification settings |
+| Keeping the Hub secure: two-step verification, audit records and backups | Legitimate interests, and the legal duty to keep personal information secure |
 | Reports to Provincial leadership | Legitimate interests. Quarterly reports use totals, not named individuals |
 
 Where we rely on legitimate interests we have balanced them against your interests and rights **[OWNER TO CONFIRM: that a legitimate interests assessment has been completed and recorded]**. You can object at any time (see "Your rights").
@@ -69,7 +69,7 @@ The Hub does not make decisions about you by automated means that have legal or 
 
 ## Sensitive information
 
-Membership of Freemasonry may be treated as revealing a philosophical belief, which is "special category" information under data protection law. A confidential concern or a support request may also include information about health or welfare. **[OWNER TO CONFIRM: whether membership is treated as special category information, and the condition relied on for it and for confidential concerns, for example the condition for not-for-profit bodies or the safeguarding condition in the Data Protection Act 2018, together with the appropriate policy document if one is required]**.
+Membership of Freemasonry may be treated as revealing a philosophical belief, which is "special category" information under data protection law. A confidential concern or a support request may also include information about health or welfare. The Province treats membership as special category information. It uses this information, and information about health or welfare in concerns and support requests, under the condition for not-for-profit bodies (UK GDPR Article 9(2)(d)): only in the course of its activities, only about members and those in regular contact with it, and not disclosed outside the Province without consent.
 
 Confidential concerns are visible only to the designated leaders who triage them (by default the Provincial Grand Mentor and Deputy), anyone they choose to assign (each assignment is recorded) and the person who raised it. They never appear in Lodge views, counts, searches or notification emails. Sensitive welfare matters belong with the Lodge Almoner, so mentoring records should note only that a referral was made.
 
@@ -90,13 +90,13 @@ Organisations that run parts of the Hub for us ("processors"), under contract:
 
 | Provider | What they do | Where |
 |---|---|---|
-| Supabase | Database, sign-in and file storage | London (UK) region **[OWNER TO CONFIRM for the production project]** |
-| Vercel | Hosting the application | Configured to run in London (UK) **[OWNER TO CONFIRM in the production project settings]** |
-| Resend | Sending email | **[OWNER TO CONFIRM: the region chosen for the sending domain]** |
+| Supabase | Database, sign-in and file storage | London (UK) |
+| Vercel | Hosting the application | London (UK) |
+| Resend | Sending email | **[OWNER TO CONFIRM: the region of the sending domain. Resend does not offer a UK region; Ireland (EU) is the nearest]** |
 
-**[OWNER TO CONFIRM: that a data processing agreement is in place with each provider, and any further providers, for example backup storage]**. Information is not sold or shared for marketing. It may be disclosed where the law requires it.
+A data processing agreement, on each provider's standard terms, is in place with each of them. Information is not sold or shared for marketing. It may be disclosed where the law requires it.
 
-If a course includes a video, it is played from YouTube (in its privacy-enhanced mode) or Vimeo. When you play it, that service receives your IP address and may set its own cookies.
+If a course includes a video from YouTube (in its privacy-enhanced mode) or Vimeo, nothing is loaded from that service until you choose to load the video. When you do, that service receives your IP address and may set its own cookies.
 
 ## Transfers outside the UK
 
@@ -104,7 +104,7 @@ The providers above are based in the United States, although the Hub is configur
 
 ## How long information is kept
 
-| Information | Proposed period |
+| Information | Period |
 |---|---|
 | Records about members who have left (resigned, ceased, excluded or died) | Personal details anonymised 12 months after leaving, following the Province's recommended baseline |
 | Closed support requests and concerns | Details removed 6 years after closing |
@@ -113,9 +113,9 @@ The providers above are based in the United States, although the Hub is configur
 | In-app notifications | 12 months |
 | Learning records and certificates | **[OWNER TO CONFIRM]** |
 | Audit records of significant actions | **[OWNER TO CONFIRM]** |
-| Backups | Rolling database backups kept by Supabase for the period of its plan, and independent backups **[OWNER TO CONFIRM: how often they are taken, that they are encrypted, where they are stored and how long they are kept]** |
+| Backups | Rolling database backups kept by Supabase for the period of its plan, and independent backups taken weekly **[OWNER TO CONFIRM: that they are encrypted, where they are stored and how long they are kept]** |
 
-**[OWNER TO CONFIRM: these periods. They are built into the Hub but switched off until the Province decides them.]**
+The Hub applies these periods automatically.
 
 ## Your rights
 
@@ -139,9 +139,9 @@ You can also complain to the Information Commissioner's Office (ICO), the UK's d
 
 ## Cookies
 
-The Hub uses only the cookies it needs to keep you signed in securely. There are no analytics, advertising or tracking cookies, and no tracking code runs on Hub pages. Videos embedded in courses are the exception described above **[OWNER TO CONFIRM: whether a choice is offered before an embedded video is played]**.
+The Hub uses only the cookies it needs to keep you signed in securely. There are no analytics, advertising or tracking cookies, and no tracking code runs on Hub pages. Videos from YouTube or Vimeo are the exception described above: they load only when you choose, after a message explaining that the service may set cookies.
 
-Emails record delivery and bounces. **[OWNER TO CONFIRM: whether open and click tracking is switched on in the email service. It is recommended to keep it off.]**
+Emails record delivery and bounces only. Open and click tracking is switched off.
 
 ## Children
 

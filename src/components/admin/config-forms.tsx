@@ -87,7 +87,7 @@ export function SettingsForm({ action, settings }: { action: Action; settings: S
       <fieldset className="space-y-3">
         <legend className="text-[15px] font-semibold text-navy-900">Academy</legend>
         <CheckboxField name="academy_allow_self_approval" label="Reviewers may approve courses they wrote" defaultChecked={settings.academy?.allow_self_approval ?? false} />
-        <CheckboxField name="academy_live_editing" label="Live editing: authors may edit published courses directly"
+        <CheckboxField name="academy_live_editing" label="Live editing: administrators may edit published courses directly"
           hint="Changes show to learners straight away, without a new version or approval. Use it before members have access, and switch it off once they do." defaultChecked={settings.academy?.live_editing ?? false} />
       </fieldset>
       <fieldset className="space-y-3">

@@ -1,6 +1,7 @@
 import "server-only";
 import type { DB } from "../supabase";
 import { parseContent, type Block } from "./content";
+import { can, getSession } from "../session";
 
 export type OutlineLesson = {
   id: string; title: string; kind: string; position: number; estimated_minutes: number | null;
@@ -106,8 +107,10 @@ export async function loadMyEnrolments(db: DB, personId: string, opts: { include
   });
 }
 
-/** Whether authors may edit published versions in place (organisation setting academy.live_editing). */
+/** Whether this user may edit published versions in place: the organisation setting
+ * academy.live_editing is on and they hold admin.config (RLS enforces the same). */
 export async function liveEditing(db: DB): Promise<boolean> {
+  if (!can(await getSession(), "admin.config")) return false;
   const { data } = await db.from("organisations").select("settings").single();
   return (data?.settings as { academy?: { live_editing?: boolean } } | null)?.academy?.live_editing === true;
 }
