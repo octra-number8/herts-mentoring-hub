@@ -4,6 +4,7 @@ import { z } from "zod";
 import { check, defineAction, UserError, zf } from "@/server/action";
 import { kickJobs } from "@/server/jobs/kick";
 import { blockSchema, scenarioSchema } from "@/server/academy/content";
+import { liveEditing } from "@/server/academy/queries";
 import type { DB } from "@/server/supabase";
 
 const AUTHOR = { permission: ["academy.author" as const] };
@@ -49,11 +50,12 @@ export const updateCourse = defineAction(
   AUTHOR,
 );
 
-/** Edits refuse unless the version is a draft (RLS enforces the same). */
+/** Edits refuse unless the version is a draft, or published while live editing is on (RLS enforces the same). */
 async function requireDraft(db: DB, versionId: string) {
   const data = check(await db.from("course_versions").select("status").eq("id", versionId).maybeSingle());
   if (!data) throw new UserError("Version not found.");
-  if (data.status !== "draft") throw new UserError("Only draft versions can be edited. Start a new version to make changes.");
+  if (data.status === "draft" || (data.status === "published" && await liveEditing(db))) return;
+  throw new UserError("Only draft versions can be edited. Start a new version to make changes.");
 }
 async function versionOfModule(db: DB, moduleId: string) {
   const data = check(await db.from("course_modules").select("version_id").eq("id", moduleId).maybeSingle());

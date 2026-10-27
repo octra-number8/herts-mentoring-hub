@@ -95,6 +95,7 @@ export const saveSettings = defineAction(
     comms_allocated_requires_approval: zf.checkbox(),
     reply_to: z.string().trim().email("Enter a valid reply-to address").or(z.literal("")),
     academy_allow_self_approval: zf.checkbox(),
+    academy_live_editing: zf.checkbox(),
     authoritative_fields: zf.list(),
     new_initiate_window_days: zf.int("Days").pipe(z.number().min(30).max(1825)),
   }),
@@ -105,7 +106,7 @@ export const saveSettings = defineAction(
       ...s,
       progression: { ...(s.progression as object), ea_to_fc_months: i.ea_to_fc_months, fc_to_mm_months: i.fc_to_mm_months, new_member_review_days: i.new_member_review_days },
       comms: { ...(s.comms as object), allow_self_approval: i.comms_allow_self_approval, allocated_requires_approval: i.comms_allocated_requires_approval, reply_to: i.reply_to || undefined },
-      academy: { ...(s.academy as object), allow_self_approval: i.academy_allow_self_approval },
+      academy: { ...(s.academy as object), allow_self_approval: i.academy_allow_self_approval, live_editing: i.academy_live_editing },
       imports: { ...(s.imports as object), authoritative_fields: fields, new_initiate_window_days: i.new_initiate_window_days },
     }));
     return { message: "Settings saved.", revalidate: R };

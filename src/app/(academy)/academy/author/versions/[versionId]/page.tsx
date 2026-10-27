@@ -8,7 +8,7 @@ import { ActionButton } from "@/components/ui/dialog-form";
 import { Alert, DescriptionList, EmptyState, PageHeader, Panel } from "@/components/ui/layout";
 import { formatDateTime, label } from "@/lib/utils";
 import { lessonKindLabel, minutesLabel } from "@/server/academy/content";
-import { flatLessons, loadOutline, outlineMinutes } from "@/server/academy/queries";
+import { flatLessons, liveEditing, loadOutline, outlineMinutes } from "@/server/academy/queries";
 import { requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
 import { addLesson, addModule, deleteLesson, deleteModule, moveLesson, moveModule, submitForReview, updateModule, updateVersionSettings, withdrawFromReview } from "../../actions";
@@ -30,7 +30,8 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
   const { data: qs } = quizIds.length ? await db.from("questions").select("lesson_id").in("lesson_id", quizIds) : { data: [] as { lesson_id: string }[] };
   const qCount = new Map<string, number>();
   for (const q of qs ?? []) qCount.set(q.lesson_id, (qCount.get(q.lesson_id) ?? 0) + 1);
-  const editable = version.status === "draft";
+  const draft = version.status === "draft", live = version.status === "published" && await liveEditing(db);
+  const editable = draft || live;
   const warnings = [
     ...(lessons.length === 0 ? ["Add at least one lesson before submitting for review."] : []),
     ...lessons.filter((l) => l.kind === "quiz" && !qCount.get(l.id)).map((l) => `"${l.title}" has no questions yet.`),
@@ -43,15 +44,16 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
         meta={<><Badge tone={statusTone(version.status)}>{label(version.status)}</Badge><span className="text-sm text-muted">{lessons.length} lessons · {minutesLabel(outlineMinutes(outline)) || "no time estimates"}</span></>}
         actions={<>
           {lessons[0] && <Link href={`/academy/author/preview/${versionId}/${lessons[0].id}`} className={buttonClass("secondary")}>Preview as learner</Link>}
-          {editable && <SubmitForReviewForm action={submitForReview} versionId={versionId} changeSummary={version.change_summary} />}
+          {draft && <SubmitForReviewForm action={submitForReview} versionId={versionId} changeSummary={version.change_summary} />}
           {version.status === "review" && <ActionButton action={withdrawFromReview} fields={{ version_id: versionId }} size="md" confirm="Withdraw this version from review so you can edit it?">Withdraw from review</ActionButton>}
         </>} />
 
       <div className="mb-6 space-y-3">
-        {editable && version.review_note && <Alert tone="warning" title="Returned by the reviewer">{version.review_note}</Alert>}
+        {draft && version.review_note && <Alert tone="warning" title="Returned by the reviewer">{version.review_note}</Alert>}
         {version.status === "review" && <Alert tone="info" title="In review">Submitted {formatDateTime(version.submitted_at)}. A reviewer other than the author will approve it or return it with a note.</Alert>}
+        {live && <Alert tone="warning" title="Live editing is on">This version is published. Changes you save here are visible to learners straight away. Live editing can be switched off in Administration, Configuration.</Alert>}
         {!editable && version.status !== "review" && <Alert tone="info">This version is {label(version.status).toLowerCase()} and can no longer be edited. To make changes, start a new version from the course page.</Alert>}
-        {editable && warnings.length > 0 && <Alert tone="warning" title="Before submitting"><ul className="list-disc pl-5">{warnings.map((w) => <li key={w}>{w}</li>)}</ul></Alert>}
+        {draft && warnings.length > 0 && <Alert tone="warning" title="Before submitting"><ul className="list-disc pl-5">{warnings.map((w) => <li key={w}>{w}</li>)}</ul></Alert>}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">

@@ -11,7 +11,7 @@ import { ActionButton } from "@/components/ui/dialog-form";
 import { Alert, EmptyState, PageHeader, Panel } from "@/components/ui/layout";
 import { label } from "@/lib/utils";
 import { lessonKindLabel, parseContent } from "@/server/academy/content";
-import { signMedia } from "@/server/academy/queries";
+import { liveEditing, signMedia } from "@/server/academy/queries";
 import { requirePermission } from "@/server/session";
 import { supabaseServer } from "@/server/supabase";
 import { deleteQuestion, moveQuestion, saveLessonContent, saveQuestion, updateLesson, uploadMedia } from "../../actions";
@@ -30,7 +30,8 @@ export default async function LessonEditorPage({ params }: { params: Promise<{ l
   if (!lesson) notFound();
   const mod = lesson.course_modules as unknown as { title: string; version_id: string; course_versions: { id: string; version_no: number; status: string; pass_mark: number; courses: { id: string; title: string } } };
   const version = mod.course_versions;
-  const editable = version.status === "draft";
+  const live = version.status === "published" && await liveEditing(db);
+  const editable = version.status === "draft" || live;
   const content = parseContent(lesson.content);
   const media = await signMedia(db, content.blocks);
   const isQuiz = lesson.kind === "quiz";
@@ -50,6 +51,7 @@ export default async function LessonEditorPage({ params }: { params: Promise<{ l
         title={lesson.title} meta={<><Badge tone="teal">{lessonKindLabel(lesson.kind)}</Badge><span className="text-sm text-muted">{mod.title}</span>{!editable && <Badge>{label(version.status)}: read only</Badge>}</>}
         actions={<Link href={`/academy/author/preview/${version.id}/${lessonId}`} className={buttonClass("secondary")}>Preview as learner</Link>} />
 
+      {live && <div className="mb-6"><Alert tone="warning" title="Live editing is on">This lesson is published. Changes you save are visible to learners straight away.</Alert></div>}
       {!editable && <div className="mb-6"><Alert tone="info">This version is {label(version.status).toLowerCase()}, so its lessons cannot be edited.</Alert></div>}
 
       <div className="grid gap-6 xl:grid-cols-3">

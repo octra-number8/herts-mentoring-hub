@@ -105,3 +105,9 @@ export async function loadMyEnrolments(db: DB, personId: string, opts: { include
     };
   });
 }
+
+/** Whether authors may edit published versions in place (organisation setting academy.live_editing). */
+export async function liveEditing(db: DB): Promise<boolean> {
+  const { data } = await db.from("organisations").select("settings").single();
+  return (data?.settings as { academy?: { live_editing?: boolean } } | null)?.academy?.live_editing === true;
+}
