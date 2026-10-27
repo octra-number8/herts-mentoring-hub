@@ -413,12 +413,12 @@ enabled = true
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 
-# Hosted staging (synthetic data only). Applied with:
+# The live site, app.hertsmentors.com (the only hosted project). Applied with:
 #   npx supabase config push --project-ref pgthnipdqbuoqptxkovs
-[remotes.staging]
+[remotes.live]
 project_id = "pgthnipdqbuoqptxkovs"
 
-[remotes.staging.auth]
+[remotes.live.auth]
 site_url = "https://app.hertsmentors.com"
 # No wildcard preview hosts: anyone can create a Vercel project whose name matches a
 # pattern, and an allowed redirect would receive sign-in tokens. Add exact hosts only.

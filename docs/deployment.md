@@ -1,6 +1,6 @@
 # Deployment guide
 
-Production runs on **Vercel** (Next.js) and **Supabase** (Postgres, Auth, Storage), with **Resend** for email. Nothing reaches production without passing CI on GitHub.
+The live site runs on **Vercel** (Next.js) and **Supabase** (Postgres, Auth, Storage), with **Resend** for email. Nothing reaches the live site without passing CI on GitHub.
 
 ## Environments
 
@@ -8,21 +8,23 @@ Production runs on **Vercel** (Next.js) and **Supabase** (Postgres, Auth, Storag
 |---|---|---|---|---|
 | Local development | `npm run dev` on http://localhost:3100 | Local Supabase in Docker (ports 554xx) | Synthetic seed | Captured by Mailpit (http://127.0.0.1:55424) |
 | CI | GitHub Actions | Local Supabase in the runner | Synthetic seed | Captured |
-| Preview | Vercel preview deployment per pull request | Supabase staging project | Synthetic only | Resend test mode or SMTP capture |
-| Production (https://app.hertsmentors.com) | Vercel production (main branch) | Supabase production project | Live only after data authorisation | Resend, verified domain |
+| Live (https://app.hertsmentors.com) | Vercel production | Supabase project `pgthnipdqbuoqptxkovs` | Live only after data authorisation | Resend, verified domain (not yet set up) |
 
-## Staging (live)
+There is one hosted site, and no staging or preview environment (owner decision, 27 October 2026). Changes are tested locally and in CI before they reach it. Do not point a Vercel preview deployment at the live database.
+
+## Live site
 
 | Item | Value |
 |---|---|
 | URL | https://app.hertsmentors.com (Vercel project `herts-mentoring-hub`, team FIRE) |
-| Database | Supabase project `herts-mentoring-hub-staging` (`pgthnipdqbuoqptxkovs`, London) |
-| Data | Clean: only the administrator account and the three E-series courses. All synthetic people, lodges, Areas, meeting centres, documents, knowledge articles and placeholder courses were removed on 25 Oct 2026. Configuration (roles, permissions, categories, templates, workflows) is kept |
+| Database | Supabase project `pgthnipdqbuoqptxkovs`, London. It was created as `herts-mentoring-hub-staging`; the name in the Supabase dashboard can be changed there. |
+| Data | Published Academy courses and the administrator account, plus one test Lodge and test learner to remove before members join. The site has had no synthetic people since this clean-up: All synthetic people, lodges, Areas, meeting centres, documents, knowledge articles and placeholder courses were removed on 25 Oct 2026. Configuration (roles, permissions, categories, templates, workflows) is kept |
 | Email | `EMAIL_DRIVER=memory`: nothing is sent until a Resend domain is verified |
 | Background jobs | Vercel Cron, every 10 minutes |
-| Test accounts | None. Do not re-seed staging now it holds a real administrator; test locally or in CI instead |
+| Test accounts | Never seed this database (`scripts/seed.ts` refuses a hosted database). Test locally or in CI instead |
+| Backups | Supabase daily backups need the Pro plan; check the plan before real data. Independent backups: weekly (owner decision), encrypted |
 
-Deploy a new version: `npx vercel deploy --prod` after CI passes. Apply new migrations first: `npx supabase db push --linked`. Auth settings for staging live in `supabase/config.toml` under `[remotes.staging]` and are applied with `npx supabase config push --project-ref pgthnipdqbuoqptxkovs`.
+Deploy a new version: `npx vercel deploy --prod` after CI passes. Apply new migrations first: `npx supabase db push --linked`. Auth settings for the live site are in `supabase/config.toml` under `[remotes.live]` and are applied with `npx supabase config push --project-ref pgthnipdqbuoqptxkovs`.
 
 Note: linking the CLI to the hosted project records its service versions locally (`supabase/.temp`); restart the local stack (`npx supabase stop && npx supabase start`) afterwards so local Storage matches.
 
@@ -30,16 +32,16 @@ Note: linking the CLI to the hosted project records its service versions locally
 
 1. Work on a branch; open a pull request.
 2. CI runs lint, type check, database/RLS/workflow tests, build, end-to-end and accessibility tests.
-3. Vercel builds a preview against the staging database for review.
-4. Merge to `main` after review. Migrations are applied to production **before** the new code is promoted (they are additive by convention).
-5. Promote the deployment in Vercel. Roll back by promoting the previous deployment; roll back data only through the recovery procedure.
+3. Merge to `main` after review.
+4. Apply migrations to the live database **before** deploying the new code (they are additive by convention).
+5. Deploy with `npx vercel deploy --prod`. Roll back by promoting the previous deployment; roll back data only through the recovery procedure.
 
-Do not publish untested changes directly to production. Do not run `supabase db reset` against any hosted project.
+Do not publish untested changes to the live site. Do not run `supabase db reset` against any hosted project.
 
 ## First-time setup
 
-### Supabase (staging and production: one project each, same region, e.g. London `eu-west-2`)
-1. Create the project. Enable daily backups (Pro plan) and point-in-time recovery for production.
+### Supabase (one project, London `eu-west-2`)
+1. Create the project. Enable daily backups (Pro plan), and point-in-time recovery if the budget allows.
 2. Link and apply migrations:
    ```
    npx supabase link --project-ref <ref>
@@ -48,7 +50,7 @@ Do not publish untested changes directly to production. Do not run `supabase db 
 3. Auth settings (Dashboard → Authentication):
    - Disable public sign-ups (accounts are by invitation only).
    - Enable TOTP MFA.
-   - Site URL: `https://app.hertsmentors.com`. Redirect URLs: `https://app.hertsmentors.com/auth/callback`, `https://app.hertsmentors.com/auth/confirm` (plus the staging and Vercel preview domains for the staging project).
+   - Site URL: `https://app.hertsmentors.com`. Redirect URLs: `https://app.hertsmentors.com/auth/callback`, `https://app.hertsmentors.com/auth/confirm`.
    - SMTP: Resend SMTP credentials so Supabase Auth emails (email links, password reset) come from the Province's domain.
    - Email templates: link to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<type>`.
 4. Create the organisation (once), as the service role:

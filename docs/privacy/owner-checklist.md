@@ -46,7 +46,7 @@ To settle a point, replace its placeholder with the confirmed wording, update `P
 - **Check that open and click tracking is off** on the Resend domain.
 - **Check the Supabase and Vercel project regions** in each dashboard.
 - **Switch live editing off** under Administration, Configuration once members have access.
-- **app.hertsmentors.com is the only site.** It is labelled "staging" but holds the published courses and the administrator account, so it is kept and becomes the live site. There is no separate production project.
+- **app.hertsmentors.com is the only site, and is the live site.** It is documented that way in `docs/deployment.md`. Before members join, remove the test Lodge (No. 9999) and the test learner.
 - Have a **breach response** plan, including the 72-hour ICO reporting test, and a way to assemble **subject access requests** (one month).
 
 ## Risks to note

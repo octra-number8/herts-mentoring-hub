@@ -61,7 +61,7 @@ The method followed OWASP Top 10 (2021) and ASVS 4 areas: access control, authen
 
 | Priority | Risk | Why not fixed / what is needed |
 |---|---|---|
-| High (before live data) | **Hosted settings unverified.** Supabase Auth on staging and production (password policy, redirect list, MFA), the Vercel region and environment variables, headers on the live domain, and Resend tracking. | Changing live infrastructure needs approval. See `docs/security/self-check.md`, manual checks. |
+| High (before live data) | **Hosted settings unverified.** Supabase Auth on the live site (password policy, redirect list, MFA), the Vercel region and environment variables, headers on the live domain, and Resend tracking. | Changing live infrastructure needs approval. See `docs/security/self-check.md`, manual checks. |
 | Medium | **No application-level rate limiting** on `/join`, `/forgot-password`, `/unsubscribe/*` or `/api/calendar/*`. Self-registration is throttled per member (one link per 5 minutes), but not per IP. | Vercel WAF or firewall rules are an infrastructure and cost decision (owner decision B3). |
 | Medium | **Changing a member's email address redirects their unclaimed account.** A member-writer (for example an Assistant) can change the email of a member who has no account; the set-up link then goes to the new address. The gain is learner-level access to that member's own records. | Product decision: require leadership approval, or notify the old address, on email changes. |
 | Medium | **Technical administrators can create accounts with non-leadership mentoring roles** (for example Assistant or team) at an address they control, so their "cannot read" boundary relies on audit rather than prevention. | Separation-of-duties decision: require leadership approval for granting mentoring roles (owner decision B4). |
@@ -74,7 +74,7 @@ The method followed OWASP Top 10 (2021) and ASVS 4 areas: access control, authen
 | Low | **No RFC 8058 one-click unsubscribe** (`List-Unsubscribe` points to a signed-in page). | Needed for bulk-sender rules and good practice under PECR. |
 | Info | **Leadership (`admin.roles`) can grant themselves any permission.** Assistants hold `events.manage` across the Province. | By design; confirm it is intended. |
 | Info | **Dependency advisory** `uuid` via `exceljs` (moderate). It is not reachable: exceljs never passes a buffer. | Accepted until 31 January 2027 (`security/audit-allowlist.json`). |
-| Operational | **The Academy live-editing setting is on in staging.** | Switch it off before members have access. |
+| Operational | **The Academy live-editing setting is on on the live site.** | Switch it off before members have access. |
 | Operational | **Local backups** in `backups/` are unencrypted on the laptop. | Encrypt or delete (owner checklist). |
 | Safeguarding | **The E7f safeguarding contact is still open**, and confidential concerns rely on designated triage. | Confirm triage holders and the safeguarding contact before live use. |
 

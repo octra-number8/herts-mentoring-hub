@@ -1,6 +1,6 @@
 // Prints the current TOTP code for a seeded test user.
 //   node scripts/totp.mjs pgm                      (local)
-//   SEED_SECRETS_FILE=.staging-secrets.json node scripts/totp.mjs pgm   (staging)
+//   SEED_SECRETS_FILE=<file> node scripts/totp.mjs pgm   (another secrets file)
 import { generateSync } from "otplib";
 import { readFileSync } from "node:fs";
 const s = JSON.parse(readFileSync(process.env.SEED_SECRETS_FILE ?? ".seed-secrets.json", "utf8"));

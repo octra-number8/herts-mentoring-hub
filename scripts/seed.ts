@@ -24,7 +24,7 @@ const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const PASSWORD = process.env.SEED_PASSWORD ?? `Hub-${randomBytes(18).toString("base64url")}-1`;
 
 if (!URL.includes("127.0.0.1") && !URL.includes("localhost") && process.env.ALLOW_REMOTE_SEED !== "yes-synthetic-only") {
-  throw new Error("Refusing to seed a non-local database. Set ALLOW_REMOTE_SEED=yes-synthetic-only for a synthetic staging project.");
+  throw new Error("Refusing to seed a non-local database. Set ALLOW_REMOTE_SEED=yes-synthetic-only for a synthetic test project (never the live site).");
 }
 
 const db: SupabaseClient = createClient(URL, SERVICE, { auth: { persistSession: false } });

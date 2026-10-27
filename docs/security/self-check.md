@@ -36,7 +36,7 @@ npm run security:check
 | Regression tests | Security unit tests (redirects, email escaping, attachments, notice). Access-control tests: learner isolation, role permissions and this review's fixes, run as several synthetic users | Unit: nothing. Access control: local stack |
 | Live headers | CSP with nonce, HSTS, frame, nosniff and referrer headers on a running local app. Optional | `npm run dev` |
 
-The check never contacts staging, production or any third-party service, except the npm registry for the audit.
+The check never contacts the live site or any third-party service, except the npm registry for the audit.
 
 ## Adding an exception
 
@@ -55,7 +55,7 @@ Do these before real personal data is loaded, and after significant changes:
 
    `supabase config push` applies `supabase/config.toml` to a project, after approval.
 2. **Headers on the hosted site.** Run `curl -sI https://<host>/login` and check CSP, HSTS and frame protection. Then open the key pages in a browser and check the console shows no CSP violations.
-3. **Access walk-through on staging** with synthetic accounts for each role: learner, Lodge Mentor (portal off and on), Assistant, technical administrator and leadership. Try another learner's certificate, evidence and lesson URLs, and the management URLs.
+3. **Access walk-through locally** (`npm run dev` with the synthetic seed), with accounts for each role: learner, Lodge Mentor (portal off and on), Assistant, technical administrator and leadership. Try another learner's certificate, evidence and lesson URLs, and the management URLs.
 4. **Backups:** run the restore drill (`docs/runbooks.md`). Confirm independent backups are encrypted and stored off this laptop.
 5. **Rate limiting:** confirm Vercel WAF or firewall rules on `/join`, `/forgot-password`, `/login`, `/api/calendar/*` and `/unsubscribe/*`. Supabase Auth limits only its own endpoints.
 6. **Accounts:** review who holds leadership and technical administrator roles. Remove leavers, and confirm MFA for everyone with management access.

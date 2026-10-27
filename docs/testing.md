@@ -79,7 +79,7 @@ Testing found real defects, all fixed and covered by tests:
 
 ## Known limitations of the test evidence
 
-- All data is synthetic. Performance has been exercised with 40 Lodges and about 800 members; Hertfordshire's real numbers are larger and should be load-checked on staging before go-live.
+- All data is synthetic. Performance has been exercised with 40 Lodges and about 800 members; Hertfordshire's real numbers are larger and should be load-checked locally at that scale before go-live.
 - Email delivery is tested through local capture. Resend's real delivery, bounce and webhook behaviour is verified only with signed test payloads until a production domain exists.
 - Browser tests run in Chromium. Safari and Firefox have not been tested automatically.
 - Accessibility is automated (axe) plus visual review of screenshots; a manual screen-reader review is still recommended before go-live.

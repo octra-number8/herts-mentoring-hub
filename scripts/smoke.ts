@@ -6,8 +6,8 @@
  *
  * Append =<status> to expect a status other than 200. Reports the status, the
  * page <title> and any server error text. Exits 1 if an expectation fails.
- * Needs the dev server on APP_URL (default http://localhost:3100). For staging set
- * APP_URL, ENV_FILE and SEED_SECRETS_FILE (.staging-secrets.json).
+ * Needs the dev server on APP_URL (default http://localhost:3100). For another
+ * environment set APP_URL, ENV_FILE and SEED_SECRETS_FILE. Never against the live site.
  */
 import { createServerClient } from "@supabase/ssr";
 import { generateSync } from "otplib";

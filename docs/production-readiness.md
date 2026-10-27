@@ -21,13 +21,13 @@ What remains before the Hub can hold live information and go live. Items are gro
 | # | Item | Owner | Status |
 |---|---|---|---|
 | 10 | Vercel team/project (Pro plan if 10-minute cron is wanted; otherwise Supabase pg_cron) | Province | Open: needs an account owned by the Province |
-| 11 | Supabase production and staging projects (London region, Pro plan for daily backups; PITR for production) | Province | Approved budget: $10/month (covers one small project; Pro plan and a staging project cost more, see note) |
+| 11 | Supabase project for the live site (London region; Pro plan for daily backups) | Province | One project only, no staging (owner decision, 27 Oct 2026). Approved budget: $10/month; check whether daily backups are included, see note |
 | 12 | Resend account, verified sending domain (SPF/DKIM/DMARC), API key, webhook secret | Province DNS admin | Open |
 | 13 | Production domain `app.hertsmentors.com` (hertsmentors.com is on Vercel DNS); Resend DNS records added in Vercel | Domain owner | Decided; add domain to the Vercel project and Resend records at go-live |
 | 14 | Octra-Lodge: inspect the real API and agree integration permissions | Octra-Lodge | Open: adapter defined, not connected |
 | 15 | Any automated Hermes/Adelphi feed | UGLE | Not available; manual import works fully |
 
-Note on cost: a Supabase project on a paid organisation is billed per project (compute) on top of the plan. The approved $10/month covers a single Micro compute project for a synthetic staging environment. Production with daily backups needs the Pro plan; point-in-time recovery is an add-on. Confirm the production budget before go-live.
+Note on cost: a Supabase project on a paid organisation is billed per project (compute) on top of the plan. The approved $10/month covers a single Micro compute project, which is now the live site. Production with daily backups needs the Pro plan; point-in-time recovery is an add-on. Confirm the production budget before go-live.
 
 ## Provisional design assumptions (brief section 32), as implemented
 
@@ -44,11 +44,11 @@ Note on cost: a Supabase project on a paid organisation is billed per project (c
 
 ## Go-live tasks (once the above are settled)
 
-- [ ] Create production and staging Supabase projects; apply migrations; configure Auth (sign-ups off, TOTP on, redirect URLs, SMTP).
+- [x] Supabase project for the live site created (`pgthnipdqbuoqptxkovs`, London); migrations applied. Still to do: push the Auth settings in `[remotes.live]` and set up SMTP.
 - [ ] Bootstrap the organisation and the first Provincial Grand Mentor (`scripts/create-first-admin.ts`).
 - [ ] Configure Vercel environment variables and domain; deploy from `main` after CI passes.
 - [ ] Verify Resend domain; send a test from Administration → System health; confirm webhooks arrive.
-- [ ] Run the restore drill on staging and record the result.
+- [ ] Run the restore drill into a local database from a live backup, and record the result.
 - [ ] Review mentoring statuses, support categories, document categories and progression thresholds with the team.
 - [ ] Load approved documents into the Library; author and approve first Academy courses.
 - [ ] First live import: start with one Lodge, check reconciliation, then the Province.
@@ -60,7 +60,7 @@ Note on cost: a Supabase project on a paid organisation is billed per project (c
 - **Security review, October 2026**: fixes and outstanding risks in `docs/security/security-review-2026-10.md`. Run `npm run security:check -- --release` before go-live, and complete its manual checks.
 
 - **(build) Application-level rate limiting.** Sign-in, email links and password reset are rate-limited by Supabase Auth. Public endpoints (`/whats-on`, `/unsubscribe`, `/api/calendar`, `/api/webhooks/resend`) rely on token secrecy and Vercel's platform protection; add Vercel WAF rate-limit rules or an app-level limiter before go-live.
-- **(build) Load check on staging** with realistic volumes (Hertfordshire's full Lodge and membership numbers). Local testing used 40 Lodges and about 800 synthetic members.
+- **(build) Load check locally** with realistic volumes (Hertfordshire's full Lodge and membership numbers). Local testing used 40 Lodges and about 800 synthetic members.
 - **(build) Cross-browser checks.** Automated tests run in Chromium; check Safari (iPhone) and Firefox manually or add Playwright projects.
 - **Manual screen-reader review** of the main journeys (automated axe checks pass).
-- **Hosted staging is live** at https://app.hertsmentors.com with synthetic data (see `docs/deployment.md`). Before real data: a separate production Supabase project (Pro plan, backups, PITR), a Resend domain, and moving staging to its own subdomain (e.g. staging.hertsmentors.com) so `app.` can serve production.
+- **The live site** is https://app.hertsmentors.com (see `docs/deployment.md`). There is no staging site. Before real data: daily backups on the Supabase plan, a Resend domain, and removing the test Lodge and test learner.
