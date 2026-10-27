@@ -14,6 +14,8 @@ There is one hosted site, and no staging or preview environment (owner decision,
 
 ## Live site
 
+Last deployed 27 October 2026 from `main` (security review included). Live database migrations are up to date to `20261028000300`, and the Auth settings in `[remotes.live]` have been pushed.
+
 | Item | Value |
 |---|---|
 | URL | https://app.hertsmentors.com (Vercel project `herts-mentoring-hub`, team FIRE) |
