@@ -24,6 +24,20 @@
 
   --color-sky-200: #bfd6ea;
 
+  /* Principle tones for course tiles: accent text and bar, tile wash, border. */
+  --color-prepare: #003668;
+  --color-prepare-wash: #edf3fa;
+  --color-prepare-line: #c9d8ea;
+  --color-guide: #0f6a6c;
+  --color-guide-wash: #eef8f7;
+  --color-guide-line: #bfe0de;
+  --color-support: #6a3f78;
+  --color-support-wash: #f8f3fa;
+  --color-support-line: #e2d3e8;
+  --color-enlighten: #8a5a00;
+  --color-enlighten-wash: #fdf7ea;
+  --color-enlighten-line: #ecd9ae;
+
   --color-ink: #1d2733;
   --color-slate-ink: #3d4a57;
   --color-muted: #5d6b7a;

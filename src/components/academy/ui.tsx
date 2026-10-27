@@ -31,9 +31,17 @@ export function LevelBadge({ level }: { level: string }) {
   return <Badge tone={level === "essential" ? "navy" : level === "recommended" ? "teal" : "neutral"}>{label(level)}</Badge>;
 }
 
+/** Colour tone for each principle, so tiles can be told apart at a glance. */
+const PRINCIPLE_TONES: Record<string, { text: string; tile: string; bar: string }> = {
+  prepare: { text: "text-prepare", tile: "border-prepare-line bg-prepare-wash", bar: "bg-prepare" },
+  guide: { text: "text-guide", tile: "border-guide-line bg-guide-wash", bar: "bg-guide" },
+  support: { text: "text-support", tile: "border-support-line bg-support-wash", bar: "bg-support" },
+  enlighten: { text: "text-enlighten", tile: "border-enlighten-line bg-enlighten-wash", bar: "bg-enlighten" },
+};
+
 export function PrincipleTag({ principle }: { principle: string | null }) {
   if (!principle) return null;
-  return <span className="text-[13px] font-medium uppercase tracking-wide text-teal-800">{label(principle)}</span>;
+  return <span className={cn("text-[13px] font-semibold uppercase tracking-wide", PRINCIPLE_TONES[principle]?.text ?? "text-teal-800")}>{label(principle)}</span>;
 }
 
 export type CourseCardData = {
@@ -45,8 +53,10 @@ export type CourseCardData = {
 export function CourseCard({ course, progress, status, reason, footer }: {
   course: CourseCardData; progress?: number; status?: string; reason?: string; footer?: React.ReactNode;
 }) {
+  const tone = course.principle ? PRINCIPLE_TONES[course.principle] : undefined;
   return (
-    <article className="group relative flex flex-col rounded-xl border border-line bg-surface p-5 transition-colors focus-within:border-navy-600 hover:border-navy-600">
+    <article className={cn("group relative flex flex-col overflow-hidden rounded-xl border p-5 transition-colors focus-within:border-navy-600 hover:border-navy-600", tone?.tile ?? "border-line bg-surface")}>
+      {tone && <span aria-hidden className={cn("absolute inset-x-0 top-0 h-1", tone.bar)} />}
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <PrincipleTag principle={course.principle} />
         <span className="ml-auto flex flex-wrap gap-1.5">
