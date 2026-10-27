@@ -24,7 +24,7 @@ To settle a point, replace its placeholder with the confirmed wording, update `P
 | Backups | Weekly |
 | Embedded video | Click to load. Built: nothing is requested from YouTube or Vimeo until the learner chooses. |
 | Email tracking | Off |
-| Staging site | Not wanted |
+| Staging site | Not wanted. app.hertsmentors.com is the single, live site. The old local backups were moved to the Trash on 27 October 2026. |
 | Rate limiting | No paid Vercel WAF. Supabase Auth's built-in limits apply. |
 | Mentoring roles | No leadership sign-off needed to grant them |
 | Live editing | Administrators only (`admin.config`). Built in migration `20261028000200`. |
@@ -46,8 +46,7 @@ To settle a point, replace its placeholder with the confirmed wording, update `P
 - **Check that open and click tracking is off** on the Resend domain.
 - **Check the Supabase and Vercel project regions** in each dashboard.
 - **Switch live editing off** under Administration, Configuration once members have access.
-- Decide whether to **delete or encrypt the local backups** in the git-ignored `backups/` folder.
-- **Retire the staging site**, if it is not wanted. This needs explicit approval because it deletes infrastructure.
+- **app.hertsmentors.com is the only site.** It is labelled "staging" but holds the published courses and the administrator account, so it is kept and becomes the live site. There is no separate production project.
 - Have a **breach response** plan, including the 72-hour ICO reporting test, and a way to assemble **subject access requests** (one month).
 
 ## Risks to note
